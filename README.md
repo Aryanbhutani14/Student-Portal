@@ -34,13 +34,10 @@ BMU Student Portal/
     │   ├── main.dart               # Theme setup, MaterialApp routing configuration
     │   └── views/auth/             # Glassmorphic UI Screens (Login, Signup, Forgot Password, OTP)
     ├── web/
-    │   └── flutter_bootstrap.js    # CanvasKit and font fallback engine boot settings
-    └── pubspec.yaml                # Frontend package dependencies & font assets configuration
+    │   └── flutter_bootstrap.js    # CanvasKit and font fallback engine boot 
 ```
 
----
-
-## 🛠️ Completed Phases (Up to Phase 3)
+## 🛠️ Completed Phases
 
 ### 📌 Phase 0 — Project Setup
 *   Initialized the mono-repo structure segregating the frontend and backend workspaces.
@@ -50,28 +47,46 @@ BMU Student Portal/
 ### 📌 Phase 1 — Database Design
 Created a structured PostgreSQL database schema (`placement-portal-backend/src/main/resources/schema.sql`) mapping entity relationships:
 *   `users`: Stores email, hashed password, role (Student, Recruiter, Admin), verification status (`is_verified`), OTP token, and token expiry.
-*   `students`: Tracks student profile information (name, branch, semester, CGPA, skills, GitHub/LinkedIn URLs, resume link) associated with their `users` account.
-*   `recruiters`: Tracks company profile information (company name, website, verification status) associated with their `users` account.
+*   `students`: Tracks student profile information associated with their `users` account.
+*   `recruiters`: Tracks company profile information associated with their `users` account.
 *   `jobs`: Mapped job listings containing descriptions, locations, salary packages, requirements, application deadlines, and the posting recruiter's ID.
 *   `applications`: Mapped join-table representing student job applications along with status states (`APPLIED`, `UNDER_REVIEW`, `SHORTLISTED`, `INTERVIEW`, `SELECTED`, `REJECTED`).
-*   `resume_scores`: Automated resume parser score values and feedback suggestions.
-*   `saved_jobs`: Bookmarked listings created by students.
-*   `announcements`: General portal announcements and notifications.
 
 ### 📌 Phase 2 — Authentication Module
-*   **JWT Backend Integration**: Implemented JWT authentication filter (`JwtAuthenticationFilter`) that checks the `Authorization: Bearer <token>` header for stateless requests. Standardized registration (`POST /auth/register`) and login (`POST /auth/login`) responses to issue JWTs.
-*   **BCrypt Hashing**: Integrated Spring Security password encoder hashing credentials at rest.
-*   **Frontend UI Design**: Implemented a responsive premium design language using:
-    *   **Glassmorphism Effects**: Translucent overlay cards with fine borders and drop shadows.
-    *   **Color Palette**: Deep dark space backgrounds (`#0F0C1B`) contrasted with neon Indigo (`#6366F1`) and Purple (`#8B5CF6`) gradients.
-    *   **Screens**: Interactive forms for login, role-specific registration (STUDENT/RECRUITER fields toggle), and forgot password recovery.
+*   **JWT Backend Integration**: Implemented JWT authentication filter that checks the `Authorization: Bearer <token>` header for stateless requests. Standardized registration (`POST /auth/register`) and login (`POST /auth/login`) responses.
+*   **BCrypt Hashing**: Hashing credentials at rest.
+*   **Frontend UI Design**: Implemented a responsive premium design language using Glassmorphism effects.
 
 ### 📌 Phase 3 — Email Verification & Domain Restriction
-*   **Strict Domain Validation**: Implemented email checks enforcing that only BML Munjal University email addresses (`@bmu.edu.in`) can register or log in. This validation is run consistently on both the Flutter client and the Spring Boot API.
-*   **OTP Verification Engine**: Added fields to database tables to store OTP and token expiration timestamps (5-minute expiration window).
-*   **JavaMail Integration**: Added support for sending OTP verification messages using SMTP.
-    *   *Developer Console Fallback*: When SMTP credentials are not specified in the environment variables, the backend logs the generated verification code directly to the Spring Boot standard output console (e.g. `TO: target@bmu.edu.in | OTP: 123456`), allowing seamless offline testing.
-*   **OTP Screen Implementation**: Created `otp_verification_screen.dart` featuring a custom 6-digit numeric verification layout, validation feedback, and an interactive 30-second resend countdown timer. If a user attempts to log in with an unverified account, they are automatically routed to the OTP screen to verify.
+*   **Strict Domain Validation**: Enforces `@bmu.edu.in` domain registration.
+*   **OTP Verification Engine**: 6-digit numeric verification OTP, sent via JavaMail SMTP or printed to stdout fallback.
+
+### 📌 Phase 4 — Student Profile Module
+*   **Profile Management**: Stores branch, semester, CGPA, skills, certifications, projects, experience, GitHub, LinkedIn, and resume URLs in PostgreSQL.
+*   **REST APIs**:
+  - `GET /student/profile` (Retrieve profile details)
+  - `PUT /student/profile` (Update profile details)
+
+### 📌 Phase 5 — Resume Upload
+*   Configured database integrations for mapping student profile resume URLs.
+
+### 📌 Phase 6 — Job Portal
+*   **Opportunity Engine**: Recruiters can post careers using `POST /jobs/create`.
+*   **Student Hub**: Search dashboard listing job cards, filtering by location/skill/type, and recommended jobs matched dynamically using student profile skills.
+
+### 📌 Phase 7 — Apply System & Student Dashboard
+*   **Apply API**: Exposed `POST /apply` matching student profiles with target jobs and preventing duplicate applications.
+*   **Applications Status Dashboard**: Integrated a left navigation bar layout on `student_home_screen.dart` with a dashboard tab rendering applied jobs and progress badges (APPLIED, UNDER_REVIEW, SHORTLISTED, SELECTED, REJECTED).
+
+---
+
+## 🎨 Global UI Theme Redesign
+The portal was redesigned to conform to a modern, premium dark SaaS interface:
+*   **Scaffold Background**: Deep Slate Navy (`#0A0E17`)
+*   **Translucent Surface**: Dark Slate Gray (`#111827`)
+*   **Input Fields Fill**: Dark Navy (`#1F2937`)
+*   **Primary Accent**: Electric Teal (`#14B8A6`)
+*   **Secondary Accent**: Cool Tech Blue (`#3B82F6`)
 
 ---
 
@@ -111,11 +126,10 @@ sequenceDiagram
 ## 🏁 Getting Started
 
 ### Prerequisites
-*   **Java Development Kit (JDK) 21**
+*   **Java JDK 21**
 *   **Apache Maven 3.9+**
-*   **PostgreSQL** (running locally or remotely)
-*   **Flutter SDK** (Stable channel, Web support enabled)
-*   **Google Chrome** (for testing the Web frontend)
+*   **PostgreSQL**
+*   **Flutter SDK** (Web support enabled)
 
 ### 1. Database Initialization
 Create a new PostgreSQL database instance named `placement_portal`:
@@ -123,29 +137,21 @@ Create a new PostgreSQL database instance named `placement_portal`:
 CREATE DATABASE placement_portal;
 ```
 
-Update the configuration in [application.properties](file:///c:/Users/ARYAN%20BHUTANI/Desktop/BMU%20Student%20Portal/placement-portal-backend/src/main/resources/application.properties):
+Update config settings in `placement-portal-backend/src/main/resources/application.properties`:
 ```properties
 spring.datasource.url=jdbc:postgresql://localhost:5432/placement_portal
 spring.datasource.username=your_postgres_user
 spring.datasource.password=your_postgres_password
 ```
 
-### 2. Configure Email/SMTP Settings (Optional)
-To enable real email dispatch for OTP codes, set the following environment variables on your system:
-*   `SPRING_MAIL_USERNAME`: Your Gmail address (e.g. `example@gmail.com`)
-*   `SPRING_MAIL_PASSWORD`: Your 16-character Google App Password (generated via Google Account settings)
-
-*If these environment variables are absent, the application runs in offline developer mode, printing OTP codes directly to the console output.*
-
-### 3. Launch the Backend API
+### 2. Launch the Backend API
 Navigate to the backend directory and compile/run the application:
 ```bash
 cd placement-portal-backend
 mvn spring-boot:run
 ```
-*(Upon running, Hibernate automatically sets up and drops/recreates tables defined in `schema.sql`).*
 
-### 4. Launch the Frontend Application
+### 3. Launch the Frontend Application
 Navigate to the frontend directory, resolve dependencies, and start the development server targeting Google Chrome:
 ```bash
 cd placement-portal-frontend
@@ -155,19 +161,38 @@ flutter run -d chrome
 
 ---
 
-## ⚙️ REST API Endpoints (Auth Module)
+## ⚙️ REST API Endpoints
 
+### Authentication
 | Method | Endpoint | Description | Payload Example |
 | :--- | :--- | :--- | :--- |
 | **POST** | `/auth/register` | Registers a new account, generates an OTP, and sends a verification email. | `{"email": "test@bmu.edu.in", "password": "pass", "role": "STUDENT", "name": "Aryan"}` |
-| **POST** | `/auth/login` | Log in to an account. Throws an exception if the email is not verified yet. | `{"email": "test@bmu.edu.in", "password": "pass"}` |
+| **POST** | `/auth/login` | Log in to an account. | `{"email": "test@bmu.edu.in", "password": "pass"}` |
 | **POST** | `/auth/send-otp` | Generates a fresh 6-digit OTP code and updates the user's expiration window. | `{"email": "test@bmu.edu.in"}` |
 | **POST** | `/auth/verify-otp` | Validates the verification code. Sets user as verified. | `{"email": "test@bmu.edu.in", "otp": "123456"}` |
 | **POST** | `/auth/forgot-password` | Simulates sending password reset instructions. | `{"email": "test@bmu.edu.in"}` |
 
+### Student Profile
+| Method | Endpoint | Description | Payload Example |
+| :--- | :--- | :--- | :--- |
+| **GET** | `/student/profile` | Fetches student profile. | *(Requires Bearer Token)* |
+| **PUT** | `/student/profile` | Updates student profile details. | `{"name": "Aryan", "branch": "CSE", "semester": 6, "cgpa": 9.2, "skills": "Java, Flutter"}` |
+
+### Job Opportunities
+| Method | Endpoint | Description | Payload Example |
+| :--- | :--- | :--- | :--- |
+| **POST** | `/jobs/create` | Posts a new job listing (Recruiter only). | `{"role": "SDE Intern", "description": "...", "location": "Delhi", "salary": "12 LPA", "type": "Internship"}` |
+| **GET** | `/jobs` | Searches and filters jobs case-insensitively. | `GET /jobs?skill=java&location=Delhi` |
+| **GET** | `/jobs/recruiter` | Fetches postings created by the current logged-in recruiter. | *(Requires Recruiter Bearer Token)* |
+
+### Applications
+| Method | Endpoint | Description | Payload Example |
+| :--- | :--- | :--- | :--- |
+| **POST** | `/apply` | Applies student profile to job. | `{"jobId": 1}` |
+| **GET** | `/student/applications` | Fetches student's job applications and status updates. | *(Requires Student Bearer Token)* |
+
 ---
 
 ## 🛠️ Offline & Asset Rendering Workarounds
-During local development, two major rendering issues were resolved:
 1.  **CanvasKit Load Failure**: CanvasKit WASM file loading is bypassed internally by saving CanvasKit dependencies locally and linking them via `canvasKitBaseUrl: "canvaskit/"` inside `flutter_bootstrap.js`.
-2.  **Font Resolution Failure**: Roboto fonts are bundled locally under `assets/fonts/` and registered under `pubspec.yaml` to prevent font fetching timeouts in offline environments. In addition, Git configurations in the root [.gitattributes](file:///.gitattributes) file enforce `*.ttf binary` checks to ensure these binary fonts do not corrupt during Windows CRLF checkouts.
+2.  **Font Resolution Failure**: Roboto fonts are bundled locally under `assets/fonts/` and registered under `pubspec.yaml` to prevent font fetching timeouts in offline environments. In addition, Git configurations in the root `.gitattributes` file enforce `*.ttf binary` checks to ensure these binary fonts do not corrupt during Windows CRLF checkouts.
