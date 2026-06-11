@@ -88,14 +88,13 @@ class _SignupScreenState extends State<SignupScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Registration Successful! Please verify your email with the OTP sent.', style: interTextStyle()),
+              content: Text('Registration Successful! Please log in.', style: interTextStyle()),
               backgroundColor: Colors.greenAccent[700],
             ),
           );
           Navigator.pushReplacementNamed(
             context,
-            '/verify-otp',
-            arguments: _emailController.text.trim(),
+            '/login',
           );
         }
       } else {

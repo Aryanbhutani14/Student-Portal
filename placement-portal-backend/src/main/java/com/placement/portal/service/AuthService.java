@@ -47,15 +47,11 @@ public class AuthService {
             throw new IllegalArgumentException("Email already exists");
         }
 
-        String otp = String.format("%06d", (int)(Math.random() * 900000 + 100000));
-
         User user = User.builder()
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .role(request.getRole())
-                .isVerified(false)
-                .otp(otp)
-                .otpExpiry(LocalDateTime.now().plusMinutes(5))
+                .isVerified(true)
                 .build();
 
         user = userRepository.save(user);
@@ -74,8 +70,6 @@ public class AuthService {
                     .build();
             recruiterRepository.save(recruiter);
         }
-
-        emailService.sendOtp(user.getEmail(), otp);
 
         UserDetails userDetails = new org.springframework.security.core.userdetails.User(
                 user.getEmail(),
@@ -99,17 +93,13 @@ public class AuthService {
 
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        request.getEmail(),
+                         request.getEmail(),
                         request.getPassword()
                 )
         );
 
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
-
-        if (user.getIsVerified() != null && !user.getIsVerified()) {
-            throw new IllegalArgumentException("Email not verified. Please verify your OTP first.");
-        }
 
         UserDetails userDetails = new org.springframework.security.core.userdetails.User(
                 user.getEmail(),
