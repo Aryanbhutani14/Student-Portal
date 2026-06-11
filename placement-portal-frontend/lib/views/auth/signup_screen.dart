@@ -1,7 +1,36 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
+
+TextStyle outfitTextStyle({
+  Color? color,
+  double? fontSize,
+  FontWeight? fontWeight,
+  double? height,
+}) {
+  return TextStyle(
+    color: color,
+    fontSize: fontSize,
+    fontWeight: fontWeight,
+    height: height,
+    fontFamily: 'sans-serif',
+  );
+}
+
+TextStyle interTextStyle({
+  Color? color,
+  double? fontSize,
+  FontWeight? fontWeight,
+  double? height,
+}) {
+  return TextStyle(
+    color: color,
+    fontSize: fontSize,
+    fontWeight: fontWeight,
+    height: height,
+    fontFamily: 'sans-serif',
+  );
+}
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -59,7 +88,7 @@ class _SignupScreenState extends State<SignupScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Registration Successful! Logging you in...', style: GoogleFonts.inter()),
+              content: Text('Registration Successful! Logging you in...', style: interTextStyle()),
               backgroundColor: Colors.greenAccent[700],
             ),
           );
@@ -172,7 +201,7 @@ class _SignupScreenState extends State<SignupScreen> {
             ),
             child: Text(
               'Join Us',
-              style: GoogleFonts.outfit(
+              style: outfitTextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.w600,
                 fontSize: 14,
@@ -182,7 +211,7 @@ class _SignupScreenState extends State<SignupScreen> {
           const SizedBox(height: 24),
           Text(
             'Create Your\nPlacement Account',
-            style: GoogleFonts.outfit(
+            style: outfitTextStyle(
               color: Colors.white,
               fontWeight: FontWeight.w800,
               fontSize: 32,
@@ -192,7 +221,7 @@ class _SignupScreenState extends State<SignupScreen> {
           const SizedBox(height: 16),
           Text(
             'Create a profile as a Student to explore jobs, or as a Recruiter to hire top-tier talent from BMU.',
-            style: GoogleFonts.inter(
+            style: interTextStyle(
               color: Colors.white70,
               fontSize: 15,
               height: 1.5,
@@ -215,7 +244,7 @@ class _SignupScreenState extends State<SignupScreen> {
           children: [
             Text(
               'Sign Up',
-              style: GoogleFonts.outfit(
+              style: outfitTextStyle(
                 color: Colors.white,
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
@@ -224,7 +253,7 @@ class _SignupScreenState extends State<SignupScreen> {
             const SizedBox(height: 8),
             Text(
               'Get started on the placement portal',
-              style: GoogleFonts.inter(
+              style: interTextStyle(
                 color: Colors.white60,
                 fontSize: 14,
               ),
@@ -245,7 +274,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     Expanded(
                       child: Text(
                         _errorMessage!,
-                        style: GoogleFonts.inter(
+                        style: interTextStyle(
                           color: Colors.redAccent,
                           fontSize: 13,
                         ),
@@ -277,14 +306,14 @@ class _SignupScreenState extends State<SignupScreen> {
             const SizedBox(height: 24),
             TextFormField(
               controller: _nameController,
-              style: GoogleFonts.inter(color: Colors.white),
+              style: interTextStyle(color: Colors.white),
               decoration: InputDecoration(
                 prefixIcon: Icon(
                   _selectedRole == 'STUDENT' ? Icons.person_outline : Icons.business_outlined,
                   color: Colors.white38,
                 ),
                 labelText: _selectedRole == 'STUDENT' ? 'Full Name' : 'Company Name',
-                labelStyle: GoogleFonts.inter(color: Colors.white38),
+                labelStyle: interTextStyle(color: Colors.white38),
                 filled: true,
                 fillColor: const Color(0xFF261D35),
                 enabledBorder: OutlineInputBorder(
@@ -315,11 +344,11 @@ class _SignupScreenState extends State<SignupScreen> {
             TextFormField(
               controller: _emailController,
               keyboardType: TextInputType.emailAddress,
-              style: GoogleFonts.inter(color: Colors.white),
+              style: interTextStyle(color: Colors.white),
               decoration: InputDecoration(
                 prefixIcon: const Icon(Icons.email_outlined, color: Colors.white38),
                 labelText: 'Email Address',
-                labelStyle: GoogleFonts.inter(color: Colors.white38),
+                labelStyle: interTextStyle(color: Colors.white38),
                 filled: true,
                 fillColor: const Color(0xFF261D35),
                 enabledBorder: OutlineInputBorder(
@@ -353,7 +382,7 @@ class _SignupScreenState extends State<SignupScreen> {
             TextFormField(
               controller: _passwordController,
               obscureText: _obscurePassword,
-              style: GoogleFonts.inter(color: Colors.white),
+              style: interTextStyle(color: Colors.white),
               decoration: InputDecoration(
                 prefixIcon: const Icon(Icons.lock_outlined, color: Colors.white38),
                 suffixIcon: IconButton(
@@ -364,7 +393,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                 ),
                 labelText: 'Password',
-                labelStyle: GoogleFonts.inter(color: Colors.white38),
+                labelStyle: interTextStyle(color: Colors.white38),
                 filled: true,
                 fillColor: const Color(0xFF261D35),
                 enabledBorder: OutlineInputBorder(
@@ -398,7 +427,7 @@ class _SignupScreenState extends State<SignupScreen> {
             TextFormField(
               controller: _confirmPasswordController,
               obscureText: _obscureConfirmPassword,
-              style: GoogleFonts.inter(color: Colors.white),
+              style: interTextStyle(color: Colors.white),
               decoration: InputDecoration(
                 prefixIcon: const Icon(Icons.lock_clock_outlined, color: Colors.white38),
                 suffixIcon: IconButton(
@@ -409,7 +438,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   onPressed: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
                 ),
                 labelText: 'Confirm Password',
-                labelStyle: GoogleFonts.inter(color: Colors.white38),
+                labelStyle: interTextStyle(color: Colors.white38),
                 filled: true,
                 fillColor: const Color(0xFF261D35),
                 enabledBorder: OutlineInputBorder(
@@ -464,7 +493,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       )
                     : Text(
                         'Create Account',
-                        style: GoogleFonts.outfit(
+                        style: outfitTextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                         ),
@@ -477,7 +506,7 @@ class _SignupScreenState extends State<SignupScreen> {
               children: [
                 Text(
                   'Already have an account?',
-                  style: GoogleFonts.inter(
+                  style: interTextStyle(
                     color: Colors.white60,
                     fontSize: 14,
                   ),
@@ -488,7 +517,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   },
                   child: Text(
                     'Sign In',
-                    style: GoogleFonts.inter(
+                    style: interTextStyle(
                       color: const Color(0xFF8B5CF6),
                       fontWeight: FontWeight.bold,
                       fontSize: 14,
@@ -524,7 +553,7 @@ class _SignupScreenState extends State<SignupScreen> {
           const SizedBox(height: 8),
           Text(
             title,
-            style: GoogleFonts.outfit(
+            style: outfitTextStyle(
               color: isSelected ? Colors.white : Colors.white60,
               fontSize: 14,
               fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,

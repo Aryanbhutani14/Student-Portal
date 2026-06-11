@@ -1,7 +1,36 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
+
+TextStyle outfitTextStyle({
+  Color? color,
+  double? fontSize,
+  FontWeight? fontWeight,
+  double? height,
+}) {
+  return TextStyle(
+    color: color,
+    fontSize: fontSize,
+    fontWeight: fontWeight,
+    height: height,
+    fontFamily: 'sans-serif',
+  );
+}
+
+TextStyle interTextStyle({
+  Color? color,
+  double? fontSize,
+  FontWeight? fontWeight,
+  double? height,
+}) {
+  return TextStyle(
+    color: color,
+    fontSize: fontSize,
+    fontWeight: fontWeight,
+    height: height,
+    fontFamily: 'sans-serif',
+  );
+}
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -135,7 +164,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           const SizedBox(height: 16),
           Text(
             'Reset Password',
-            style: GoogleFonts.outfit(
+            style: outfitTextStyle(
               color: Colors.white,
               fontSize: 28,
               fontWeight: FontWeight.bold,
@@ -144,7 +173,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           const SizedBox(height: 8),
           Text(
             'Enter your registered email and we will send you password reset instructions.',
-            style: GoogleFonts.inter(
+            style: interTextStyle(
               color: Colors.white60,
               fontSize: 14,
               height: 1.4,
@@ -166,7 +195,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   Expanded(
                     child: Text(
                       _errorMessage!,
-                      style: GoogleFonts.inter(
+                      style: interTextStyle(
                         color: Colors.redAccent,
                         fontSize: 13,
                       ),
@@ -180,11 +209,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           TextFormField(
             controller: _emailController,
             keyboardType: TextInputType.emailAddress,
-            style: GoogleFonts.inter(color: Colors.white),
+            style: interTextStyle(color: Colors.white),
             decoration: InputDecoration(
               prefixIcon: const Icon(Icons.email_outlined, color: Colors.white38),
               labelText: 'Email Address',
-              labelStyle: GoogleFonts.inter(color: Colors.white38),
+              labelStyle: interTextStyle(color: Colors.white38),
               filled: true,
               fillColor: const Color(0xFF261D35),
               enabledBorder: OutlineInputBorder(
@@ -239,7 +268,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     )
                   : Text(
                       'Send Reset Link',
-                      style: GoogleFonts.outfit(
+                      style: outfitTextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                       ),
@@ -264,7 +293,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         const SizedBox(height: 24),
         Text(
           'Email Sent!',
-          style: GoogleFonts.outfit(
+          style: outfitTextStyle(
             color: Colors.white,
             fontSize: 26,
             fontWeight: FontWeight.bold,
@@ -274,7 +303,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         Text(
           _successMessage!,
           textAlign: TextAlign.center,
-          style: GoogleFonts.inter(
+          style: interTextStyle(
             color: Colors.white60,
             fontSize: 14,
             height: 1.5,
@@ -297,7 +326,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             ),
             child: Text(
               'Back to Login',
-              style: GoogleFonts.outfit(
+              style: outfitTextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
               ),

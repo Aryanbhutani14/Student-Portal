@@ -1,7 +1,36 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
+
+TextStyle outfitTextStyle({
+  Color? color,
+  double? fontSize,
+  FontWeight? fontWeight,
+  double? height,
+}) {
+  return TextStyle(
+    color: color,
+    fontSize: fontSize,
+    fontWeight: fontWeight,
+    height: height,
+    fontFamily: 'sans-serif',
+  );
+}
+
+TextStyle interTextStyle({
+  Color? color,
+  double? fontSize,
+  FontWeight? fontWeight,
+  double? height,
+}) {
+  return TextStyle(
+    color: color,
+    fontSize: fontSize,
+    fontWeight: fontWeight,
+    height: height,
+    fontFamily: 'sans-serif',
+  );
+}
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -54,7 +83,7 @@ class _LoginScreenState extends State<LoginScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Login Successful! Token received.', style: GoogleFonts.inter()),
+              content: Text('Login Successful! Token received.', style: interTextStyle()),
               backgroundColor: Colors.greenAccent[700],
             ),
           );
@@ -166,7 +195,7 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             child: Text(
               'BMU Portal',
-              style: GoogleFonts.outfit(
+              style: outfitTextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.w600,
                 fontSize: 14,
@@ -176,7 +205,7 @@ class _LoginScreenState extends State<LoginScreen> {
           const SizedBox(height: 24),
           Text(
             'Empowering\nYour Career Journey',
-            style: GoogleFonts.outfit(
+            style: outfitTextStyle(
               color: Colors.white,
               fontWeight: FontWeight.w800,
               fontSize: 32,
@@ -186,7 +215,7 @@ class _LoginScreenState extends State<LoginScreen> {
           const SizedBox(height: 16),
           Text(
             'Connect with top companies, manage your applications, and boost your professional profile.',
-            style: GoogleFonts.inter(
+            style: interTextStyle(
               color: Colors.white70,
               fontSize: 15,
               height: 1.5,
@@ -209,7 +238,7 @@ class _LoginScreenState extends State<LoginScreen> {
           children: [
             Text(
               'Welcome Back',
-              style: GoogleFonts.outfit(
+              style: outfitTextStyle(
                 color: Colors.white,
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
@@ -218,7 +247,7 @@ class _LoginScreenState extends State<LoginScreen> {
             const SizedBox(height: 8),
             Text(
               'Login to your placement account',
-              style: GoogleFonts.inter(
+              style: interTextStyle(
                 color: Colors.white60,
                 fontSize: 14,
               ),
@@ -239,7 +268,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     Expanded(
                       child: Text(
                         _errorMessage!,
-                        style: GoogleFonts.inter(
+                        style: interTextStyle(
                           color: Colors.redAccent,
                           fontSize: 13,
                         ),
@@ -253,11 +282,11 @@ class _LoginScreenState extends State<LoginScreen> {
             TextFormField(
               controller: _emailController,
               keyboardType: TextInputType.emailAddress,
-              style: GoogleFonts.inter(color: Colors.white),
+              style: interTextStyle(color: Colors.white),
               decoration: InputDecoration(
                 prefixIcon: const Icon(Icons.email_outlined, color: Colors.white38),
                 labelText: 'Email Address',
-                labelStyle: GoogleFonts.inter(color: Colors.white38),
+                labelStyle: interTextStyle(color: Colors.white38),
                 filled: true,
                 fillColor: const Color(0xFF261D35),
                 enabledBorder: OutlineInputBorder(
@@ -291,7 +320,7 @@ class _LoginScreenState extends State<LoginScreen> {
             TextFormField(
               controller: _passwordController,
               obscureText: _obscurePassword,
-              style: GoogleFonts.inter(color: Colors.white),
+              style: interTextStyle(color: Colors.white),
               decoration: InputDecoration(
                 prefixIcon: const Icon(Icons.lock_outlined, color: Colors.white38),
                 suffixIcon: IconButton(
@@ -306,7 +335,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   },
                 ),
                 labelText: 'Password',
-                labelStyle: GoogleFonts.inter(color: Colors.white38),
+                labelStyle: interTextStyle(color: Colors.white38),
                 filled: true,
                 fillColor: const Color(0xFF261D35),
                 enabledBorder: OutlineInputBorder(
@@ -342,7 +371,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 },
                 child: Text(
                   'Forgot Password?',
-                  style: GoogleFonts.inter(
+                  style: interTextStyle(
                     color: const Color(0xFF8B5CF6),
                     fontWeight: FontWeight.w600,
                     fontSize: 13,
@@ -375,7 +404,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       )
                     : Text(
                         'Sign In',
-                        style: GoogleFonts.outfit(
+                        style: outfitTextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                         ),
@@ -388,7 +417,7 @@ class _LoginScreenState extends State<LoginScreen> {
               children: [
                 Text(
                   "Don't have an account?",
-                  style: GoogleFonts.inter(
+                  style: interTextStyle(
                     color: Colors.white60,
                     fontSize: 14,
                   ),
@@ -399,7 +428,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   },
                   child: Text(
                     'Sign Up',
-                    style: GoogleFonts.inter(
+                    style: interTextStyle(
                       color: const Color(0xFF6366F1),
                       fontWeight: FontWeight.bold,
                       fontSize: 14,
