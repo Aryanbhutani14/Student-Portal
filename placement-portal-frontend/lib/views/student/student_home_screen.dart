@@ -34,6 +34,10 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
   List<dynamic> _recommendedJobs = [];
   Set<int> _appliedJobIds = {};
 
+  int _activeTab = 0; // 0 = Explore, 1 = Applications
+  List<dynamic> _appliedJobsList = [];
+  bool _isLoadingApplications = false;
+
   // Profile info for recommendation matching
   String _studentSkills = "";
 
@@ -79,13 +83,67 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
         _studentSkills = profileData['skills'] ?? "";
       }
 
-      // 2. Fetch Jobs
+      // 2. Fetch Applications to build _appliedJobIds
+      await _fetchAppliedJobsOnStartup();
+
+      // 3. Fetch Jobs
       await _fetchJobs();
     } catch (e) {
       setState(() {
         _errorMessage = 'Could not load data. Ensure the backend is running.';
         _isLoading = false;
       });
+    }
+  }
+
+  Future<void> _fetchAppliedJobs() async {
+    setState(() {
+      _isLoadingApplications = true;
+    });
+    final url = Uri.parse('http://localhost:8080/student/applications');
+    try {
+      final response = await http.get(
+        url,
+        headers: {
+          'Authorization': 'Bearer ${TokenManager.token}',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        setState(() {
+          _appliedJobsList = data;
+          _appliedJobIds = data.map<int>((app) => app['jobId'] as int).toSet();
+        });
+      }
+    } catch (e) {
+      print('Error loading applications: $e');
+    } finally {
+      setState(() {
+        _isLoadingApplications = false;
+      });
+    }
+  }
+
+  Future<void> _fetchAppliedJobsOnStartup() async {
+    final url = Uri.parse('http://localhost:8080/student/applications');
+    try {
+      final response = await http.get(
+        url,
+        headers: {
+          'Authorization': 'Bearer ${TokenManager.token}',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        _appliedJobsList = data;
+        _appliedJobIds = data.map<int>((app) => app['jobId'] as int).toSet();
+      }
+    } catch (e) {
+      print('Error loading applications on startup: $e');
     }
   }
 
@@ -163,7 +221,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
   }
 
   Future<void> _applyForJob(int jobId) async {
-    final url = Uri.parse('http://localhost:8080/jobs/$jobId/apply');
+    final url = Uri.parse('http://localhost:8080/apply');
     try {
       final response = await http.post(
         url,
@@ -171,12 +229,14 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
           'Authorization': 'Bearer ${TokenManager.token}',
           'Content-Type': 'application/json',
         },
+        body: jsonEncode({'jobId': jobId}),
       );
 
       if (response.statusCode == 200) {
         setState(() {
           _appliedJobIds.add(jobId);
         });
+        await _fetchAppliedJobsOnStartup();
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -363,57 +423,343 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
             end: Alignment.bottomRight,
           ),
         ),
-        child: Column(
+        child: Row(
           children: [
-            // Header bar
-            _buildHeader(),
-            // Main Content Area
+            _buildSidebar(isDesktop),
             Expanded(
-              child: _isLoading
-                  ? const Center(
-                      child: CircularProgressIndicator(color: Color(0xFF14B8A6)),
-                    )
-                  : _errorMessage != null
-                      ? Center(child: Text(_errorMessage!, style: robotoStyle(color: Colors.redAccent)))
-                      : SingleChildScrollView(
-                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _buildSearchPanel(isDesktop),
-                              const SizedBox(height: 24),
-                              if (_recommendedJobs.isNotEmpty) ...[
-                                Text(
-                                  'Recommended Opportunities (Matching your profile skills)',
-                                  style: robotoStyle(color: const Color(0xFF14B8A6), fontSize: 18, fontWeight: FontWeight.bold),
-                                ),
-                                const SizedBox(height: 12),
-                                _buildJobGrid(_recommendedJobs, isDesktop),
-                                const SizedBox(height: 32),
-                              ],
-                              Text(
-                                'All Listings',
-                                style: robotoStyle(color: const Color(0xFF14B8A6), fontSize: 18, fontWeight: FontWeight.bold),
-                              ),
-                              const SizedBox(height: 12),
-                              _allJobs.isEmpty
-                                  ? Center(
-                                      child: Padding(
-                                        padding: const EdgeInsets.symmetric(vertical: 40),
-                                        child: Text(
-                                          'No opportunities found.',
-                                          style: robotoStyle(color: Colors.white38, fontSize: 14),
-                                        ),
-                                      ),
-                                    )
-                                  : _buildJobGrid(_allJobs, isDesktop),
-                            ],
-                          ),
-                        ),
+              child: Column(
+                children: [
+                  _buildHeader(),
+                  Expanded(
+                    child: _activeTab == 0
+                        ? _buildExploreView(isDesktop)
+                        : _buildApplicationsView(isDesktop),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildSidebar(bool isDesktop) {
+    return Container(
+      width: isDesktop ? 240 : 80,
+      decoration: BoxDecoration(
+        color: const Color(0xFF0F172A),
+        border: Border(right: BorderSide(color: Colors.white.withOpacity(0.05))),
+      ),
+      child: Column(
+        children: [
+          const SizedBox(height: 32),
+          // Logo/Name
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              mainAxisAlignment: isDesktop ? MainAxisAlignment.start : MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(colors: [Color(0xFF14B8A6), Color(0xFF3B82F6)]),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(Icons.school_outlined, color: Colors.white, size: 18),
+                ),
+                if (isDesktop) ...[
+                  const SizedBox(width: 12),
+                  Text(
+                    'BMU Student',
+                    style: robotoStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          const SizedBox(height: 48),
+          _buildSidebarItem(0, Icons.explore_outlined, 'Explore', isDesktop),
+          const SizedBox(height: 12),
+          _buildSidebarItem(1, Icons.assignment_turned_in_outlined, 'Applications', isDesktop),
+          const Spacer(),
+          // Logout button
+          _buildSidebarItem(-1, Icons.logout_outlined, 'Sign Out', isDesktop),
+          const SizedBox(height: 32),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSidebarItem(int index, IconData icon, String title, bool isDesktop) {
+    final isSelected = _activeTab == index;
+    final isLogout = index == -1;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      child: InkWell(
+        onTap: () {
+          if (isLogout) {
+            TokenManager.token = null;
+            TokenManager.email = null;
+            TokenManager.role = null;
+            Navigator.pushReplacementNamed(context, '/login');
+          } else {
+            setState(() {
+              _activeTab = index;
+            });
+            if (index == 1) {
+              _fetchAppliedJobs();
+            } else {
+              _loadInitialData();
+            }
+          }
+        },
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+          decoration: BoxDecoration(
+            color: isSelected ? const Color(0xFF14B8A6).withOpacity(0.15) : Colors.transparent,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isSelected ? const Color(0xFF14B8A6).withOpacity(0.3) : Colors.transparent,
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: isDesktop ? MainAxisAlignment.start : MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                color: isSelected 
+                    ? const Color(0xFF14B8A6) 
+                    : isLogout 
+                        ? Colors.redAccent 
+                        : Colors.white60,
+                size: 20,
+              ),
+              if (isDesktop) ...[
+                const SizedBox(width: 12),
+                Text(
+                  title,
+                  style: robotoStyle(
+                    color: isSelected 
+                        ? Colors.white 
+                        : isLogout 
+                            ? Colors.redAccent 
+                            : Colors.white70,
+                    fontSize: 14,
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildExploreView(bool isDesktop) {
+    if (_isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(color: Color(0xFF14B8A6)),
+      );
+    }
+    if (_errorMessage != null) {
+      return Center(
+        child: Text(_errorMessage!, style: robotoStyle(color: Colors.redAccent)),
+      );
+    }
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildSearchPanel(isDesktop),
+          const SizedBox(height: 24),
+          if (_recommendedJobs.isNotEmpty) ...[
+            Text(
+              'Recommended Opportunities (Matching your profile skills)',
+              style: robotoStyle(color: const Color(0xFF14B8A6), fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            _buildJobGrid(_recommendedJobs, isDesktop),
+            const SizedBox(height: 32),
+          ],
+          Text(
+            'All Listings',
+            style: robotoStyle(color: const Color(0xFF14B8A6), fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 12),
+          _allJobs.isEmpty
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 40),
+                    child: Text(
+                      'No opportunities found.',
+                      style: robotoStyle(color: Colors.white38, fontSize: 14),
+                    ),
+                  ),
+                )
+              : _buildJobGrid(_allJobs, isDesktop),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildApplicationsView(bool isDesktop) {
+    if (_isLoadingApplications) {
+      return const Center(
+        child: CircularProgressIndicator(color: Color(0xFF14B8A6)),
+      );
+    }
+
+    if (_appliedJobsList.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.assignment_turned_in_outlined, size: 60, color: Colors.white24),
+            const SizedBox(height: 16),
+            Text(
+              'You haven\'t applied to any opportunities yet.',
+              style: robotoStyle(color: Colors.white38, fontSize: 15),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  _activeTab = 0;
+                });
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF14B8A6),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+              child: Text('Explore Opportunities', style: robotoStyle(fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return GridView.builder(
+      padding: const EdgeInsets.all(24),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: isDesktop ? 3 : 1,
+        crossAxisSpacing: 16,
+        mainAxisSpacing: 16,
+        mainAxisExtent: 220,
+      ),
+      itemCount: _appliedJobsList.length,
+      itemBuilder: (context, index) {
+        final app = _appliedJobsList[index];
+        final appliedDateStr = app['appliedDate'] != null
+            ? app['appliedDate'].toString().substring(0, 10)
+            : 'N/A';
+        final status = app['status'] ?? 'APPLIED';
+        
+        Color statusColor = const Color(0xFF3B82F6); // blue for APPLIED / default
+        if (status == 'SELECTED') statusColor = Colors.greenAccent[700]!;
+        if (status == 'REJECTED') statusColor = Colors.redAccent;
+        if (status == 'SHORTLISTED') statusColor = Colors.tealAccent[700]!;
+        if (status == 'INTERVIEW') statusColor = Colors.orangeAccent;
+
+        return Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: const Color(0xFF111827),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.white.withOpacity(0.04)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      app['role'] ?? 'Opportunity',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: robotoStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: statusColor.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: statusColor.withOpacity(0.3)),
+                    ),
+                    child: Text(
+                      status,
+                      style: robotoStyle(color: statusColor, fontSize: 11, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Text(
+                app['company'] ?? 'Company Name',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: robotoStyle(color: const Color(0xFF3B82F6), fontSize: 13, fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  const Icon(Icons.place_outlined, size: 14, color: Colors.white38),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      app['location'] ?? 'Not Specified',
+                      style: robotoStyle(color: Colors.white70, fontSize: 13),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              Row(
+                children: [
+                  const Icon(Icons.payments_outlined, size: 14, color: Colors.white38),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      app['salary'] ?? 'Not Specified',
+                      style: robotoStyle(color: Colors.white70, fontSize: 13),
+                    ),
+                  ),
+                ],
+              ),
+              const Spacer(),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Applied on: $appliedDateStr',
+                    style: robotoStyle(color: Colors.white38, fontSize: 11),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.05),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      app['type'] ?? 'Full-Time',
+                      style: robotoStyle(color: Colors.white60, fontSize: 10, fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -427,29 +773,9 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Row(
-            children: [
-              Container(
-                width: 10,
-                height: 30,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF14B8A6), Color(0xFF3B82F6)],
-                  ),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Text(
-                'BMU PLACEMENT PORTAL',
-                style: robotoStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 1.2,
-                ),
-              ),
-            ],
+          Text(
+            _activeTab == 0 ? 'BMU Placement Portal' : 'My Applications',
+            style: robotoStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
           ),
           ElevatedButton.icon(
             onPressed: () {
