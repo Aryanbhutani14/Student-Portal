@@ -89,9 +89,21 @@ class _LoginScreenState extends State<LoginScreen> {
           );
         }
       } else {
+        final errorMsg = data['error'] ?? 'Login failed. Please try again.';
         setState(() {
-          _errorMessage = data['error'] ?? 'Login failed. Please try again.';
+          _errorMessage = errorMsg;
         });
+        if (errorMsg.contains('Email not verified')) {
+          Future.delayed(const Duration(milliseconds: 1500), () {
+            if (mounted) {
+              Navigator.pushNamed(
+                context,
+                '/verify-otp',
+                arguments: _emailController.text.trim(),
+              );
+            }
+          });
+        }
       }
     } catch (e) {
       setState(() {
@@ -310,7 +322,11 @@ class _LoginScreenState extends State<LoginScreen> {
                 if (value == null || value.isEmpty) {
                   return 'Please enter your email';
                 }
-                if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                final emailTrimmed = value.trim();
+                if (!emailTrimmed.endsWith('@bmu.edu.in')) {
+                  return 'Email must belong to the @bmu.edu.in domain';
+                }
+                if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(emailTrimmed)) {
                   return 'Please enter a valid email address';
                 }
                 return null;

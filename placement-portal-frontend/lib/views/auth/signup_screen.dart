@@ -88,11 +88,15 @@ class _SignupScreenState extends State<SignupScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Registration Successful! Logging you in...', style: interTextStyle()),
+              content: Text('Registration Successful! Please verify your email with the OTP sent.', style: interTextStyle()),
               backgroundColor: Colors.greenAccent[700],
             ),
           );
-          Navigator.pushReplacementNamed(context, '/login');
+          Navigator.pushReplacementNamed(
+            context,
+            '/verify-otp',
+            arguments: _emailController.text.trim(),
+          );
         }
       } else {
         setState(() {
@@ -372,7 +376,11 @@ class _SignupScreenState extends State<SignupScreen> {
                 if (value == null || value.isEmpty) {
                   return 'Please enter your email';
                 }
-                if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                final emailTrimmed = value.trim();
+                if (!emailTrimmed.endsWith('@bmu.edu.in')) {
+                  return 'Email must belong to the @bmu.edu.in domain';
+                }
+                if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(emailTrimmed)) {
                   return 'Please enter a valid email address';
                 }
                 return null;

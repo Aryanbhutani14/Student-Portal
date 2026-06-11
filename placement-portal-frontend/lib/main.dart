@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:placement_portal_frontend/views/auth/login_screen.dart';
 import 'package:placement_portal_frontend/views/auth/signup_screen.dart';
 import 'package:placement_portal_frontend/views/auth/forgot_password_screen.dart';
+import 'package:placement_portal_frontend/views/auth/otp_verification_screen.dart';
 
 void main() {
   runApp(const BMUPlacementPortalApp());
@@ -32,6 +33,10 @@ class BMUPlacementPortalApp extends StatelessWidget {
         '/login': (context) => const LoginScreen(),
         '/signup': (context) => const SignupScreen(),
         '/forgot-password': (context) => const ForgotPasswordScreen(),
+        '/verify-otp': (context) {
+          final email = ModalRoute.of(context)!.settings.arguments as String? ?? '';
+          return OtpVerificationScreen(email: email);
+        },
       },
     );
   }

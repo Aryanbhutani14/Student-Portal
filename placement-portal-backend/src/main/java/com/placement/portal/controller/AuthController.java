@@ -46,4 +46,29 @@ public class AuthController {
         // Placeholder behavior: return success message
         return ResponseEntity.ok(Map.of("message", "Password reset instructions have been sent to " + email));
     }
+
+    @PostMapping("/send-otp")
+    public ResponseEntity<Map<String, String>> sendOtp(
+            @RequestBody Map<String, String> request
+    ) {
+        String email = request.get("email");
+        if (email == null || email.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Email is required"));
+        }
+        authService.sendOtp(email);
+        return ResponseEntity.ok(Map.of("message", "OTP sent successfully"));
+    }
+
+    @PostMapping("/verify-otp")
+    public ResponseEntity<Map<String, String>> verifyOtp(
+            @RequestBody Map<String, String> request
+    ) {
+        String email = request.get("email");
+        String otp = request.get("otp");
+        if (email == null || email.isBlank() || otp == null || otp.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Email and OTP are required"));
+        }
+        authService.verifyOtp(email, otp);
+        return ResponseEntity.ok(Map.of("message", "Email verified successfully"));
+    }
 }

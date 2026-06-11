@@ -20,6 +20,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,18 +35,27 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final EmailService emailService;
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
+        if (!request.getEmail().endsWith("@bmu.edu.in")) {
+            throw new IllegalArgumentException("Email must belong to the @bmu.edu.in domain");
+        }
+
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new IllegalArgumentException("Email already exists");
         }
+
+        String otp = String.format("%06d", (int)(Math.random() * 900000 + 100000));
 
         User user = User.builder()
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .role(request.getRole())
                 .isVerified(false)
+                .otp(otp)
+                .otpExpiry(LocalDateTime.now().plusMinutes(5))
                 .build();
 
         user = userRepository.save(user);
@@ -65,6 +75,8 @@ public class AuthService {
             recruiterRepository.save(recruiter);
         }
 
+        emailService.sendOtp(user.getEmail(), otp);
+
         UserDetails userDetails = new org.springframework.security.core.userdetails.User(
                 user.getEmail(),
                 user.getPassword(),
@@ -81,6 +93,10 @@ public class AuthService {
     }
 
     public AuthResponse login(LoginRequest request) {
+        if (!request.getEmail().endsWith("@bmu.edu.in")) {
+            throw new IllegalArgumentException("Email must belong to the @bmu.edu.in domain");
+        }
+
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getEmail(),
@@ -90,6 +106,10 @@ public class AuthService {
 
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        if (user.getIsVerified() != null && !user.getIsVerified()) {
+            throw new IllegalArgumentException("Email not verified. Please verify your OTP first.");
+        }
 
         UserDetails userDetails = new org.springframework.security.core.userdetails.User(
                 user.getEmail(),
@@ -104,5 +124,40 @@ public class AuthService {
         return AuthResponse.builder()
                 .token(jwtToken)
                 .build();
+    }
+
+    @Transactional
+    public void sendOtp(String email) {
+        if (!email.endsWith("@bmu.edu.in")) {
+            throw new IllegalArgumentException("Email must belong to the @bmu.edu.in domain");
+        }
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with email: " + email));
+
+        String otp = String.format("%06d", (int)(Math.random() * 900000 + 100000));
+        user.setOtp(otp);
+        user.setOtpExpiry(LocalDateTime.now().plusMinutes(5));
+        userRepository.save(user);
+
+        emailService.sendOtp(email, otp);
+    }
+
+    @Transactional
+    public void verifyOtp(String email, String otp) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with email: " + email));
+
+        if (user.getOtp() == null || !user.getOtp().equals(otp)) {
+            throw new IllegalArgumentException("Invalid OTP code");
+        }
+
+        if (user.getOtpExpiry() == null || LocalDateTime.now().isAfter(user.getOtpExpiry())) {
+            throw new IllegalArgumentException("OTP code has expired");
+        }
+
+        user.setIsVerified(true);
+        user.setOtp(null);
+        user.setOtpExpiry(null);
+        userRepository.save(user);
     }
 }

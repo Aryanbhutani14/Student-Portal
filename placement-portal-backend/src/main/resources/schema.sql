@@ -15,6 +15,8 @@ CREATE TABLE users (
     password VARCHAR(255) NOT NULL,
     role VARCHAR(50) NOT NULL CHECK (role IN ('STUDENT', 'RECRUITER', 'ADMIN')),
     is_verified BOOLEAN DEFAULT FALSE,
+    otp VARCHAR(6),
+    otp_expiry TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

@@ -33,6 +33,12 @@ public class User {
     @Column(name = "is_verified")
     private Boolean isVerified = false;
 
+    @Column(name = "otp")
+    private String otp;
+
+    @Column(name = "otp_expiry")
+    private LocalDateTime otpExpiry;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
