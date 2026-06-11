@@ -219,7 +219,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
             final isCurrentlyApplied = _appliedJobIds.contains(jobId);
 
             return Dialog(
-              backgroundColor: const Color(0xFF1B1425),
+              backgroundColor: const Color(0xFF111827),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
               child: Container(
                 constraints: const BoxConstraints(maxWidth: 600),
@@ -242,7 +242,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                               const SizedBox(height: 4),
                               Text(
                                 job['company'] ?? 'Company Name',
-                                style: robotoStyle(color: const Color(0xFF6366F1), fontSize: 16, fontWeight: FontWeight.w600),
+                                style: robotoStyle(color: const Color(0xFF3B82F6), fontSize: 16, fontWeight: FontWeight.w600),
                               ),
                             ],
                           ),
@@ -271,7 +271,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                     const SizedBox(height: 16),
                     Text(
                       'Skills Required',
-                      style: robotoStyle(color: const Color(0xFF8B5CF6), fontSize: 14, fontWeight: FontWeight.bold),
+                      style: robotoStyle(color: const Color(0xFF14B8A6), fontSize: 14, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 8),
                     Text(
@@ -281,7 +281,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                     const SizedBox(height: 16),
                     Text(
                       'Description',
-                      style: robotoStyle(color: const Color(0xFF8B5CF6), fontSize: 14, fontWeight: FontWeight.bold),
+                      style: robotoStyle(color: const Color(0xFF14B8A6), fontSize: 14, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 8),
                     Container(
@@ -305,7 +305,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                                 setDialogState(() {});
                               },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF6366F1),
+                          backgroundColor: const Color(0xFF14B8A6),
                           foregroundColor: Colors.white,
                           disabledBackgroundColor: Colors.white10,
                           disabledForegroundColor: Colors.white30,
@@ -356,8 +356,8 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              Color(0xFF0F0C1B),
-              Color(0xFF140D24),
+              Color(0xFF0A0E17),
+              Color(0xFF0F172A),
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -371,7 +371,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
             Expanded(
               child: _isLoading
                   ? const Center(
-                      child: CircularProgressIndicator(color: Color(0xFF6366F1)),
+                      child: CircularProgressIndicator(color: Color(0xFF14B8A6)),
                     )
                   : _errorMessage != null
                       ? Center(child: Text(_errorMessage!, style: robotoStyle(color: Colors.redAccent)))
@@ -385,7 +385,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                               if (_recommendedJobs.isNotEmpty) ...[
                                 Text(
                                   'Recommended Opportunities (Matching your profile skills)',
-                                  style: robotoStyle(color: const Color(0xFF8B5CF6), fontSize: 18, fontWeight: FontWeight.bold),
+                                  style: robotoStyle(color: const Color(0xFF14B8A6), fontSize: 18, fontWeight: FontWeight.bold),
                                 ),
                                 const SizedBox(height: 12),
                                 _buildJobGrid(_recommendedJobs, isDesktop),
@@ -393,7 +393,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                               ],
                               Text(
                                 'All Listings',
-                                style: robotoStyle(color: const Color(0xFF6366F1), fontSize: 18, fontWeight: FontWeight.bold),
+                                style: robotoStyle(color: const Color(0xFF14B8A6), fontSize: 18, fontWeight: FontWeight.bold),
                               ),
                               const SizedBox(height: 12),
                               _allJobs.isEmpty
@@ -434,7 +434,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                 height: 30,
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                    colors: [Color(0xFF14B8A6), Color(0xFF3B82F6)],
                   ),
                   borderRadius: BorderRadius.circular(4),
                 ),
@@ -456,7 +456,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
               Navigator.pushNamed(context, '/student/profile');
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF1B1425),
+              backgroundColor: const Color(0xFF111827),
               foregroundColor: Colors.white,
               elevation: 0,
               shape: RoundedRectangleBorder(
@@ -465,7 +465,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
               ),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             ),
-            icon: const Icon(Icons.person_outlined, size: 18, color: Color(0xFF6366F1)),
+            icon: const Icon(Icons.person_outlined, size: 18, color: Color(0xFF3B82F6)),
             label: Text(
               'My Profile',
               style: robotoStyle(fontSize: 13, fontWeight: FontWeight.w600),
@@ -480,7 +480,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF1B1425),
+        color: const Color(0xFF111827),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.white.withAlpha(15)),
       ),
@@ -521,16 +521,16 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
       decoration: InputDecoration(
         labelText: label,
         labelStyle: robotoStyle(color: Colors.white38, fontSize: 13),
-        prefixIcon: Icon(icon, color: const Color(0xFF8B5CF6), size: 18),
+        prefixIcon: Icon(icon, color: const Color(0xFF14B8A6), size: 18),
         filled: true,
-        fillColor: const Color(0xFF0F0C1B),
+        fillColor: const Color(0xFF1F2937),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
           borderSide: BorderSide.none,
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: Color(0xFF6366F1), width: 1.5),
+          borderSide: const BorderSide(color: Color(0xFF14B8A6), width: 1.5),
         ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       ),
@@ -541,15 +541,15 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       decoration: BoxDecoration(
-        color: const Color(0xFF0F0C1B),
+        color: const Color(0xFF1F2937),
         borderRadius: BorderRadius.circular(10),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           value: _selectedType,
-          dropdownColor: const Color(0xFF0F0C1B),
+          dropdownColor: const Color(0xFF1F2937),
           style: robotoStyle(color: Colors.white, fontSize: 14),
-          icon: const Icon(Icons.arrow_drop_down, color: Color(0xFF8B5CF6)),
+          icon: const Icon(Icons.arrow_drop_down, color: Color(0xFF14B8A6)),
           items: _jobTypes.map((type) {
             return DropdownMenuItem<String>(
               value: type,
@@ -574,7 +574,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
       child: ElevatedButton.icon(
         onPressed: _fetchJobs,
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF6366F1),
+          backgroundColor: const Color(0xFF14B8A6),
           foregroundColor: Colors.white,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -610,7 +610,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: const Color(0xFF1B1425),
+        color: const Color(0xFF111827),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.white.withOpacity(0.04)),
       ),
@@ -631,12 +631,12 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: const Color(0x228B5CF6),
+                  color: const Color(0x2214B8A6),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
                   job['type'] ?? 'Full-Time',
-                  style: robotoStyle(color: const Color(0xFF8B5CF6), fontSize: 11, fontWeight: FontWeight.bold),
+                  style: robotoStyle(color: const Color(0xFF14B8A6), fontSize: 11, fontWeight: FontWeight.bold),
                 ),
               ),
             ],
@@ -646,7 +646,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
             job['company'] ?? 'Company Name',
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: robotoStyle(color: const Color(0xFF6366F1), fontSize: 13, fontWeight: FontWeight.w600),
+            style: robotoStyle(color: const Color(0xFF3B82F6), fontSize: 13, fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 12),
           Row(
@@ -691,7 +691,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
               ElevatedButton(
                 onPressed: () => _showJobDetails(job),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF6366F1),
+                  backgroundColor: const Color(0xFF14B8A6),
                   foregroundColor: Colors.white,
                   elevation: 0,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),

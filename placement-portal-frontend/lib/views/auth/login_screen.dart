@@ -144,9 +144,9 @@ class _LoginScreenState extends State<LoginScreen> {
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              Color(0xFF0F0C1B),
-              Color(0xFF201A30),
-              Color(0xFF140D24),
+              Color(0xFF0A0E17),
+              Color(0xFF1E293B),
+              Color(0xFF0F172A),
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -202,8 +202,8 @@ class _LoginScreenState extends State<LoginScreen> {
       decoration: const BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            Color(0xFF6366F1),
-            Color(0xFF8B5CF6),
+            Color(0xFF14B8A6),
+            Color(0xFF3B82F6),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -254,7 +254,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Widget _buildFormPanel() {
     return Container(
-      color: const Color(0xFF1B1425),
+      color: const Color(0xFF111827),
       padding: const EdgeInsets.all(40.0),
       child: Form(
         key: _formKey,
@@ -314,14 +314,14 @@ class _LoginScreenState extends State<LoginScreen> {
                 labelText: 'Email Address',
                 labelStyle: interTextStyle(color: Colors.white38),
                 filled: true,
-                fillColor: const Color(0xFF261D35),
+                fillColor: const Color(0xFF1F2937),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide(color: Colors.white.withOpacity(0.05)),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFF6366F1)),
+                  borderSide: const BorderSide(color: Color(0xFF14B8A6)),
                 ),
                 errorBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -367,14 +367,14 @@ class _LoginScreenState extends State<LoginScreen> {
                 labelText: 'Password',
                 labelStyle: interTextStyle(color: Colors.white38),
                 filled: true,
-                fillColor: const Color(0xFF261D35),
+                fillColor: const Color(0xFF1F2937),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide(color: Colors.white.withOpacity(0.05)),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFF6366F1)),
+                  borderSide: const BorderSide(color: Color(0xFF14B8A6)),
                 ),
                 errorBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -402,7 +402,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Text(
                   'Forgot Password?',
                   style: interTextStyle(
-                    color: const Color(0xFF8B5CF6),
+                    color: const Color(0xFF3B82F6),
                     fontWeight: FontWeight.w600,
                     fontSize: 13,
                   ),
@@ -416,7 +416,7 @@ class _LoginScreenState extends State<LoginScreen> {
               child: ElevatedButton(
                 onPressed: _isLoading ? null : _handleLogin,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF6366F1),
+                  backgroundColor: const Color(0xFF14B8A6),
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -459,7 +459,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Text(
                     'Sign Up',
                     style: interTextStyle(
-                      color: const Color(0xFF6366F1),
+                      color: const Color(0xFF3B82F6),
                       fontWeight: FontWeight.bold,
                       fontSize: 14,
                     ),

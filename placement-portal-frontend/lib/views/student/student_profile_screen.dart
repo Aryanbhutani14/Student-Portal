@@ -215,9 +215,9 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              Color(0xFF0F0C1B),
-              Color(0xFF201A30),
-              Color(0xFF140D24),
+              Color(0xFF0A0E17),
+              Color(0xFF1E293B),
+              Color(0xFF0F172A),
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -226,7 +226,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
         child: _isLoading
             ? const Center(
                 child: CircularProgressIndicator(
-                  color: Color(0xFF6366F1),
+                  color: Color(0xFF14B8A6),
                 ),
               )
             : SafeArea(
@@ -253,7 +253,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(24),
                         child: Container(
-                          color: const Color(0xFF1B1425),
+                          color: const Color(0xFF111827),
                           padding: const EdgeInsets.all(32.0),
                           child: Form(
                             key: _formKey,
@@ -330,7 +330,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                 icon: const Icon(Icons.edit, size: 18, color: Colors.white),
                 label: Text('Edit Profile', style: robotoStyle(color: Colors.white)),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF6366F1),
+                  backgroundColor: const Color(0xFF14B8A6),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -362,7 +362,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                     : const Icon(Icons.save, size: 18, color: Colors.white),
                 label: Text(_isSaving ? 'Saving...' : 'Save', style: robotoStyle(color: Colors.white)),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF8B5CF6),
+                  backgroundColor: const Color(0xFF14B8A6),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -491,7 +491,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF0F0C1B),
+        color: const Color(0xFF1F2937),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.white.withAlpha(15)),
       ),
@@ -501,10 +501,10 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
           Text(
             title,
             style: robotoStyle(
-              color: const Color(0xFF6366F1),
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
+                color: const Color(0xFF14B8A6),
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
           ),
           const SizedBox(height: 16),
           ...children,
@@ -532,7 +532,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
       padding: const EdgeInsets.only(bottom: 12.0),
       child: Row(
         children: [
-          Icon(icon, color: hasLink ? const Color(0xFF8B5CF6) : Colors.white24, size: 18),
+          Icon(icon, color: hasLink ? const Color(0xFF3B82F6) : Colors.white24, size: 18),
           const SizedBox(width: 12),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -542,7 +542,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
               Text(
                 hasLink ? value : 'Not provided',
                 style: robotoStyle(
-                  color: hasLink ? const Color(0xFF6366F1) : Colors.white30,
+                  color: hasLink ? const Color(0xFF3B82F6) : Colors.white30,
                   fontSize: 13,
                   fontWeight: hasLink ? FontWeight.bold : FontWeight.normal,
                 ),
@@ -559,7 +559,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF0F0C1B),
+        color: const Color(0xFF1F2937),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.white.withAlpha(15)),
       ),
@@ -568,7 +568,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
         children: [
           Row(
             children: [
-              Icon(icon, color: const Color(0xFF6366F1), size: 20),
+              Icon(icon, color: const Color(0xFF14B8A6), size: 20),
               const SizedBox(width: 8),
               Text(
                 title,
@@ -623,7 +623,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
       children: [
         Text(
           'Personal Info',
-          style: robotoStyle(color: const Color(0xFF6366F1), fontSize: 16, fontWeight: FontWeight.bold),
+          style: robotoStyle(color: const Color(0xFF14B8A6), fontSize: 16, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 16),
         _buildTextField(_nameController, 'Full Name', Icons.person_outlined, validator: (val) {
@@ -671,7 +671,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
         const SizedBox(height: 32),
         Text(
           'Links',
-          style: robotoStyle(color: const Color(0xFF6366F1), fontSize: 16, fontWeight: FontWeight.bold),
+          style: robotoStyle(color: const Color(0xFF14B8A6), fontSize: 16, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 16),
         _buildTextField(_githubController, 'GitHub Link', Icons.code),
@@ -689,7 +689,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
       children: [
         Text(
           'Skills & Experience',
-          style: robotoStyle(color: const Color(0xFF6366F1), fontSize: 16, fontWeight: FontWeight.bold),
+          style: robotoStyle(color: const Color(0xFF14B8A6), fontSize: 16, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 16),
         _buildTextField(_skillsController, 'Skills (comma-separated)', Icons.psychology_outlined, maxLines: 3),
@@ -724,16 +724,16 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
       decoration: InputDecoration(
         labelText: label,
         labelStyle: robotoStyle(color: Colors.white38, fontSize: 13),
-        prefixIcon: Icon(icon, color: const Color(0xFF8B5CF6), size: 20),
+        prefixIcon: Icon(icon, color: const Color(0xFF14B8A6), size: 20),
         filled: true,
-        fillColor: const Color(0xFF0F0C1B),
+        fillColor: const Color(0xFF1F2937),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFF8B5CF6), width: 1.5),
+          borderSide: const BorderSide(color: Color(0xFF14B8A6), width: 1.5),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),

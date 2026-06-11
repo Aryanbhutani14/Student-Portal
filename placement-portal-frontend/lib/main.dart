@@ -22,12 +22,12 @@ class BMUPlacementPortalApp extends StatelessWidget {
       theme: ThemeData(
         brightness: Brightness.dark,
         fontFamily: 'Roboto',
-        primaryColor: const Color(0xFF6366F1),
-        scaffoldBackgroundColor: const Color(0xFF0F0C1B),
+        primaryColor: const Color(0xFF14B8A6),
+        scaffoldBackgroundColor: const Color(0xFF0A0E17),
         colorScheme: const ColorScheme.dark(
-          primary: Color(0xFF6366F1),
-          secondary: Color(0xFF8B5CF6),
-          surface: Color(0xFF1B1425),
+          primary: Color(0xFF14B8A6),
+          secondary: Color(0xFF3B82F6),
+          surface: Color(0xFF111827),
         ),
         useMaterial3: true,
       ),

@@ -194,9 +194,9 @@ class _RecruiterDashboardScreenState extends State<RecruiterDashboardScreen> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: const ColorScheme.dark(
-              primary: Color(0xFF6366F1),
+              primary: Color(0xFF14B8A6),
               onPrimary: Colors.white,
-              surface: Color(0xFF1B1425),
+              surface: Color(0xFF111827),
               onSurface: Colors.white,
             ),
           ),
@@ -224,8 +224,8 @@ class _RecruiterDashboardScreenState extends State<RecruiterDashboardScreen> {
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              Color(0xFF0F0C1B),
-              Color(0xFF140D24),
+              Color(0xFF0A0E17),
+              Color(0xFF0F172A),
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -256,7 +256,7 @@ class _RecruiterDashboardScreenState extends State<RecruiterDashboardScreen> {
     return Container(
       width: isDesktop ? 240 : 80,
       decoration: BoxDecoration(
-        color: const Color(0xFF120E1E),
+        color: const Color(0xFF0F172A),
         border: Border(right: BorderSide(color: Colors.white.withOpacity(0.05))),
       ),
       child: Column(
@@ -272,7 +272,7 @@ class _RecruiterDashboardScreenState extends State<RecruiterDashboardScreen> {
                   width: 32,
                   height: 32,
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)]),
+                    gradient: const LinearGradient(colors: [Color(0xFF14B8A6), Color(0xFF3B82F6)]),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Icon(Icons.business_center_outlined, color: Colors.white, size: 18),
@@ -326,10 +326,10 @@ class _RecruiterDashboardScreenState extends State<RecruiterDashboardScreen> {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
           decoration: BoxDecoration(
-            color: isSelected ? const Color(0xFF6366F1).withOpacity(0.15) : Colors.transparent,
+            color: isSelected ? const Color(0xFF14B8A6).withOpacity(0.15) : Colors.transparent,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: isSelected ? const Color(0xFF6366F1).withOpacity(0.3) : Colors.transparent,
+              color: isSelected ? const Color(0xFF14B8A6).withOpacity(0.3) : Colors.transparent,
             ),
           ),
           child: Row(
@@ -338,7 +338,7 @@ class _RecruiterDashboardScreenState extends State<RecruiterDashboardScreen> {
               Icon(
                 icon,
                 color: isSelected 
-                    ? const Color(0xFF6366F1) 
+                    ? const Color(0xFF14B8A6) 
                     : isLogout 
                         ? Colors.redAccent 
                         : Colors.white60,
@@ -382,7 +382,7 @@ class _RecruiterDashboardScreenState extends State<RecruiterDashboardScreen> {
           ),
           Row(
             children: [
-              const Icon(Icons.account_circle_outlined, color: Color(0xFF6366F1), size: 20),
+              const Icon(Icons.account_circle_outlined, color: Color(0xFF3B82F6), size: 20),
               const SizedBox(width: 8),
               Text(
                 TokenManager.email ?? '',
@@ -397,7 +397,7 @@ class _RecruiterDashboardScreenState extends State<RecruiterDashboardScreen> {
 
   Widget _buildPostingsView(bool isDesktop) {
     if (_isLoading) {
-      return const Center(child: CircularProgressIndicator(color: Color(0xFF6366F1)));
+      return const Center(child: CircularProgressIndicator(color: Color(0xFF14B8A6)));
     }
 
     if (_errorMessage != null) {
@@ -419,7 +419,7 @@ class _RecruiterDashboardScreenState extends State<RecruiterDashboardScreen> {
                   _activeTab = 1;
                 });
               },
-              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF6366F1), foregroundColor: Colors.white),
+              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF14B8A6), foregroundColor: Colors.white),
               child: Text('Create Listing', style: robotoStyle(fontWeight: FontWeight.bold)),
             ),
           ],
@@ -441,7 +441,7 @@ class _RecruiterDashboardScreenState extends State<RecruiterDashboardScreen> {
         return Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: const Color(0xFF1B1425),
+            color: const Color(0xFF111827),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: Colors.white.withOpacity(0.04)),
           ),
@@ -462,12 +462,12 @@ class _RecruiterDashboardScreenState extends State<RecruiterDashboardScreen> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: const Color(0x228B5CF6),
+                      color: const Color(0x2214B8A6),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
                       job['type'] ?? 'Full-Time',
-                      style: robotoStyle(color: const Color(0xFF8B5CF6), fontSize: 11, fontWeight: FontWeight.bold),
+                      style: robotoStyle(color: const Color(0xFF14B8A6), fontSize: 11, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ],
@@ -540,7 +540,7 @@ class _RecruiterDashboardScreenState extends State<RecruiterDashboardScreen> {
         constraints: const BoxConstraints(maxWidth: 700),
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: const Color(0xFF1B1425),
+          color: const Color(0xFF111827),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: Colors.white.withOpacity(0.04)),
         ),
@@ -551,7 +551,7 @@ class _RecruiterDashboardScreenState extends State<RecruiterDashboardScreen> {
             children: [
               Text(
                 'Opportunity Parameters',
-                style: robotoStyle(color: const Color(0xFF6366F1), fontSize: 16, fontWeight: FontWeight.bold),
+                style: robotoStyle(color: const Color(0xFF14B8A6), fontSize: 16, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 20),
               _buildFormTextField(_roleController, 'Role Name / Job Title', Icons.work_outline, validator: (v) {
@@ -596,12 +596,12 @@ class _RecruiterDashboardScreenState extends State<RecruiterDashboardScreen> {
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF0F0C1B),
+                          color: const Color(0xFF1F2937),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Row(
                           children: [
-                            const Icon(Icons.calendar_month_outlined, color: Color(0xFF8B5CF6), size: 20),
+                            const Icon(Icons.calendar_month_outlined, color: Color(0xFF14B8A6), size: 20),
                             const SizedBox(width: 12),
                             Text(
                               _selectedDeadline == null
@@ -622,13 +622,13 @@ class _RecruiterDashboardScreenState extends State<RecruiterDashboardScreen> {
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF0F0C1B),
+                        color: const Color(0xFF1F2937),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: DropdownButtonHideUnderline(
                         child: DropdownButtonFormField<String>(
                           value: _selectedType,
-                          dropdownColor: const Color(0xFF0F0C1B),
+                          dropdownColor: const Color(0xFF1F2937),
                           style: robotoStyle(color: Colors.white, fontSize: 14),
                           decoration: InputDecoration(
                             border: InputBorder.none,
@@ -661,7 +661,7 @@ class _RecruiterDashboardScreenState extends State<RecruiterDashboardScreen> {
                 child: ElevatedButton(
                   onPressed: _isSubmitting ? null : _submitJob,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF6366F1),
+                    backgroundColor: const Color(0xFF14B8A6),
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
@@ -691,16 +691,16 @@ class _RecruiterDashboardScreenState extends State<RecruiterDashboardScreen> {
       decoration: InputDecoration(
         labelText: label,
         labelStyle: robotoStyle(color: Colors.white38, fontSize: 13),
-        prefixIcon: Icon(icon, color: const Color(0xFF8B5CF6), size: 20),
+        prefixIcon: Icon(icon, color: const Color(0xFF14B8A6), size: 20),
         filled: true,
-        fillColor: const Color(0xFF0F0C1B),
+        fillColor: const Color(0xFF1F2937),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFF8B5CF6), width: 1.5),
+          borderSide: const BorderSide(color: Color(0xFF14B8A6), width: 1.5),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),

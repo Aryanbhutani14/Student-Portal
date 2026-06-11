@@ -127,9 +127,9 @@ class _SignupScreenState extends State<SignupScreen> {
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              Color(0xFF0F0C1B),
-              Color(0xFF201A30),
-              Color(0xFF140D24),
+              Color(0xFF0A0E17),
+              Color(0xFF1E293B),
+              Color(0xFF0F172A),
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -185,8 +185,8 @@ class _SignupScreenState extends State<SignupScreen> {
       decoration: const BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            Color(0xFF8B5CF6),
-            Color(0xFFEC4899),
+            Color(0xFF14B8A6),
+            Color(0xFF3B82F6),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -237,7 +237,7 @@ class _SignupScreenState extends State<SignupScreen> {
 
   Widget _buildFormPanel() {
     return Container(
-      color: const Color(0xFF1B1425),
+      color: const Color(0xFF111827),
       padding: const EdgeInsets.all(40.0),
       child: Form(
         key: _formKey,
@@ -318,14 +318,14 @@ class _SignupScreenState extends State<SignupScreen> {
                 labelText: _selectedRole == 'STUDENT' ? 'Full Name' : 'Company Name',
                 labelStyle: interTextStyle(color: Colors.white38),
                 filled: true,
-                fillColor: const Color(0xFF261D35),
+                fillColor: const Color(0xFF1F2937),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide(color: Colors.white.withOpacity(0.05)),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFF8B5CF6)),
+                  borderSide: const BorderSide(color: Color(0xFF14B8A6)),
                 ),
                 errorBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -353,14 +353,14 @@ class _SignupScreenState extends State<SignupScreen> {
                 labelText: 'Email Address',
                 labelStyle: interTextStyle(color: Colors.white38),
                 filled: true,
-                fillColor: const Color(0xFF261D35),
+                fillColor: const Color(0xFF1F2937),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide(color: Colors.white.withOpacity(0.05)),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFF8B5CF6)),
+                  borderSide: const BorderSide(color: Color(0xFF14B8A6)),
                 ),
                 errorBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -402,14 +402,14 @@ class _SignupScreenState extends State<SignupScreen> {
                 labelText: 'Password',
                 labelStyle: interTextStyle(color: Colors.white38),
                 filled: true,
-                fillColor: const Color(0xFF261D35),
+                fillColor: const Color(0xFF1F2937),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide(color: Colors.white.withOpacity(0.05)),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFF8B5CF6)),
+                  borderSide: const BorderSide(color: Color(0xFF14B8A6)),
                 ),
                 errorBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -447,14 +447,14 @@ class _SignupScreenState extends State<SignupScreen> {
                 labelText: 'Confirm Password',
                 labelStyle: interTextStyle(color: Colors.white38),
                 filled: true,
-                fillColor: const Color(0xFF261D35),
+                fillColor: const Color(0xFF1F2937),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide(color: Colors.white.withOpacity(0.05)),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFF8B5CF6)),
+                  borderSide: const BorderSide(color: Color(0xFF14B8A6)),
                 ),
                 errorBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -482,7 +482,7 @@ class _SignupScreenState extends State<SignupScreen> {
               child: ElevatedButton(
                 onPressed: _isLoading ? null : _handleSignup,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF8B5CF6),
+                  backgroundColor: const Color(0xFF14B8A6),
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -525,7 +525,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   child: Text(
                     'Sign In',
                     style: interTextStyle(
-                      color: const Color(0xFF8B5CF6),
+                      color: const Color(0xFF3B82F6),
                       fontWeight: FontWeight.bold,
                       fontSize: 14,
                     ),
@@ -543,10 +543,10 @@ class _SignupScreenState extends State<SignupScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
       decoration: BoxDecoration(
-        color: isSelected ? const Color(0x1F8B5CF6) : const Color(0xFF261D35),
+        color: isSelected ? const Color(0x1F14B8A6) : const Color(0xFF1F2937),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isSelected ? const Color(0xFF8B5CF6) : Colors.white.withOpacity(0.05),
+          color: isSelected ? const Color(0xFF14B8A6) : Colors.white.withOpacity(0.05),
           width: 1.5,
         ),
       ),
@@ -554,7 +554,7 @@ class _SignupScreenState extends State<SignupScreen> {
         children: [
           Icon(
             icon,
-            color: isSelected ? const Color(0xFF8B5CF6) : Colors.white38,
+            color: isSelected ? const Color(0xFF14B8A6) : Colors.white38,
             size: 28,
           ),
           const SizedBox(height: 8),
