@@ -28,11 +28,15 @@ class RecruiterDashboardScreen extends StatefulWidget {
 }
 
 class _RecruiterDashboardScreenState extends State<RecruiterDashboardScreen> {
-  int _activeTab = 0; // 0 = My Postings, 1 = Post Job
+  int _activeTab = 0; // 0 = My Postings, 1 = Post Job, 2 = Applications
   bool _isLoading = true;
   bool _isSubmitting = false;
   String? _errorMessage;
   List<dynamic> _recruiterJobs = [];
+
+  List<dynamic> _applications = [];
+  bool _isLoadingApplications = false;
+  final Set<int> _updatingStatusIds = {};
 
   // Post Job Form fields
   final _formKey = GlobalKey<FormState>();
@@ -60,6 +64,317 @@ class _RecruiterDashboardScreenState extends State<RecruiterDashboardScreen> {
     _salaryController.dispose();
     _skillsController.dispose();
     super.dispose();
+  }
+
+  Future<void> _fetchApplications() async {
+    setState(() {
+      _isLoadingApplications = true;
+      _errorMessage = null;
+    });
+
+    final url = Uri.parse('http://localhost:8080/recruiter/applications');
+    try {
+      final response = await http.get(
+        url,
+        headers: {
+          'Authorization': 'Bearer ${TokenManager.token}',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        setState(() {
+          _applications = data;
+          _isLoadingApplications = false;
+        });
+      } else {
+        setState(() {
+          _errorMessage = 'Failed to fetch candidate applications.';
+          _isLoadingApplications = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Could not connect to the server.';
+        _isLoadingApplications = false;
+      });
+    }
+  }
+
+  Future<void> _updateApplicationStatus(int applicationId, String newStatus) async {
+    setState(() {
+      _updatingStatusIds.add(applicationId);
+    });
+
+    final url = Uri.parse('http://localhost:8080/application/status');
+    try {
+      final response = await http.patch(
+        url,
+        headers: {
+          'Authorization': 'Bearer ${TokenManager.token}',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'applicationId': applicationId,
+          'status': newStatus,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        setState(() {
+          final index = _applications.indexWhere((app) => app['id'] == applicationId);
+          if (index != -1) {
+            _applications[index]['status'] = newStatus;
+          }
+        });
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Status updated to $newStatus successfully!', style: robotoStyle()),
+              backgroundColor: Colors.greenAccent[700],
+              duration: const Duration(seconds: 1),
+            ),
+          );
+        }
+      } else {
+        final errorMsg = response.body;
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(errorMsg.isNotEmpty ? errorMsg : 'Failed to update status.', style: robotoStyle()),
+              backgroundColor: Colors.redAccent,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error communicating with the server.', style: robotoStyle()),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    } finally {
+      setState(() {
+        _updatingStatusIds.remove(applicationId);
+      });
+    }
+  }
+
+  Widget _buildApplicationsView(bool isDesktop) {
+    if (_isLoadingApplications) {
+      return const Center(child: CircularProgressIndicator(color: Color(0xFF14B8A6)));
+    }
+
+    if (_errorMessage != null) {
+      return Center(child: Text(_errorMessage!, style: robotoStyle(color: Colors.redAccent)));
+    }
+
+    if (_applications.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.people_outline, size: 60, color: Colors.white24),
+            const SizedBox(height: 16),
+            Text('No candidate applications received yet.', style: robotoStyle(color: Colors.white38, fontSize: 15)),
+          ],
+        ),
+      );
+    }
+
+    return GridView.builder(
+      padding: const EdgeInsets.all(24),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: isDesktop ? 2 : 1,
+        crossAxisSpacing: 20,
+        mainAxisSpacing: 20,
+        mainAxisExtent: 310,
+      ),
+      itemCount: _applications.length,
+      itemBuilder: (context, index) {
+        final app = _applications[index];
+        final int appId = app['id'];
+        final currentStatus = app['status'] ?? 'APPLIED';
+        final isUpdating = _updatingStatusIds.contains(appId);
+        
+        final studentName = app['studentName'] ?? 'Student';
+        final studentEmail = app['studentEmail'] ?? 'N/A';
+        final studentBranch = app['studentBranch'] ?? 'N/A';
+        final studentSemester = app['studentSemester'] != null ? '${app['studentSemester']} Sem' : 'N/A';
+        final studentCgpa = app['studentCgpa'] != null ? '${app['studentCgpa']} CGPA' : 'N/A';
+        final studentSkills = app['studentSkills'] ?? '';
+        final resumeUrl = app['studentResumeUrl'] ?? '';
+        
+        final role = app['role'] ?? 'Opportunity';
+        final type = app['type'] ?? 'Full-Time';
+
+        Color statusColor = const Color(0xFF3B82F6);
+        if (currentStatus == 'SELECTED') statusColor = Colors.greenAccent[700]!;
+        if (currentStatus == 'REJECTED') statusColor = Colors.redAccent;
+        if (currentStatus == 'SHORTLISTED') statusColor = Colors.tealAccent[700]!;
+        if (currentStatus == 'INTERVIEW') statusColor = Colors.orangeAccent;
+
+        return Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: const Color(0xFF111827),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.white.withOpacity(0.04)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          studentName,
+                          style: robotoStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          studentEmail,
+                          style: robotoStyle(color: Colors.white38, fontSize: 12),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: statusColor.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: statusColor.withOpacity(0.3)),
+                    ),
+                    child: Text(
+                      currentStatus,
+                      style: robotoStyle(color: statusColor, fontSize: 11, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
+              ),
+              const Divider(color: Colors.white10, height: 20),
+              Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Applied Position',
+                          style: robotoStyle(color: const Color(0xFF14B8A6), fontSize: 11, fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '$role ($type)',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: robotoStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        'Academic Info',
+                        style: robotoStyle(color: const Color(0xFF14B8A6), fontSize: 11, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '$studentBranch | $studentSemester | $studentCgpa',
+                        style: robotoStyle(color: Colors.white70, fontSize: 13),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Skills',
+                style: robotoStyle(color: const Color(0xFF14B8A6), fontSize: 11, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                studentSkills.isNotEmpty ? studentSkills : 'None specified',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: robotoStyle(color: Colors.white70, fontSize: 13),
+              ),
+              const Spacer(),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  resumeUrl.isNotEmpty
+                      ? OutlinedButton.icon(
+                          onPressed: () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Opening resume URL: $resumeUrl', style: robotoStyle()),
+                                backgroundColor: const Color(0xFF14B8A6),
+                              ),
+                            );
+                          },
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: const Color(0xFF3B82F6),
+                            side: const BorderSide(color: Color(0x333B82F6)),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          ),
+                          icon: const Icon(Icons.picture_as_pdf_outlined, size: 14),
+                          label: Text('Resume', style: robotoStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                        )
+                      : Text('No Resume Uploaded', style: robotoStyle(color: Colors.white24, fontSize: 12)),
+                  isUpdating
+                      ? const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF14B8A6)),
+                        )
+                      : Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF1F2937),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.white.withOpacity(0.05)),
+                          ),
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<String>(
+                              value: currentStatus,
+                              dropdownColor: const Color(0xFF1F2937),
+                              icon: const Icon(Icons.arrow_drop_down, color: Color(0xFF14B8A6), size: 18),
+                              style: robotoStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                              items: const [
+                                DropdownMenuItem(value: 'APPLIED', child: Text('Applied')),
+                                DropdownMenuItem(value: 'UNDER_REVIEW', child: Text('Under Review')),
+                                DropdownMenuItem(value: 'SHORTLISTED', child: Text('Shortlisted')),
+                                DropdownMenuItem(value: 'INTERVIEW', child: Text('Interview')),
+                                DropdownMenuItem(value: 'SELECTED', child: Text('Selected')),
+                                DropdownMenuItem(value: 'REJECTED', child: Text('Rejected')),
+                              ],
+                              onChanged: (newStatus) {
+                                if (newStatus != null && newStatus != currentStatus) {
+                                  _updateApplicationStatus(appId, newStatus);
+                                }
+                              },
+                            ),
+                          ),
+                        ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   Future<void> _fetchRecruiterJobs() async {
@@ -241,7 +556,11 @@ class _RecruiterDashboardScreenState extends State<RecruiterDashboardScreen> {
                 children: [
                   _buildHeader(),
                   Expanded(
-                    child: _activeTab == 0 ? _buildPostingsView(isDesktop) : _buildPostJobForm(),
+                    child: _activeTab == 0
+                        ? _buildPostingsView(isDesktop)
+                        : _activeTab == 1
+                            ? _buildPostJobForm()
+                            : _buildApplicationsView(isDesktop),
                   ),
                 ],
               ),
@@ -291,6 +610,8 @@ class _RecruiterDashboardScreenState extends State<RecruiterDashboardScreen> {
           _buildSidebarItem(0, Icons.list_alt, 'My Postings', isDesktop),
           const SizedBox(height: 12),
           _buildSidebarItem(1, Icons.post_add_outlined, 'Post Opportunity', isDesktop),
+          const SizedBox(height: 12),
+          _buildSidebarItem(2, Icons.people_outline, 'Applications', isDesktop),
           const Spacer(),
           // Logout button
           _buildSidebarItem(-1, Icons.logout_outlined, 'Sign Out', isDesktop),
@@ -319,6 +640,8 @@ class _RecruiterDashboardScreenState extends State<RecruiterDashboardScreen> {
             });
             if (index == 0) {
               _fetchRecruiterJobs();
+            } else if (index == 2) {
+              _fetchApplications();
             }
           }
         },
@@ -377,7 +700,11 @@ class _RecruiterDashboardScreenState extends State<RecruiterDashboardScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            _activeTab == 0 ? 'My Posted Opportunities' : 'Create New Opportunity',
+            _activeTab == 0
+                ? 'My Posted Opportunities'
+                : _activeTab == 1
+                    ? 'Create New Opportunity'
+                    : 'Candidate Applications',
             style: robotoStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
           ),
           Row(

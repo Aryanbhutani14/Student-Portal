@@ -2,6 +2,7 @@ package com.placement.portal.service;
 
 import com.placement.portal.dto.ApplicationDto;
 import com.placement.portal.entity.Application;
+import com.placement.portal.entity.ApplicationStatus;
 import com.placement.portal.entity.Job;
 import com.placement.portal.entity.Student;
 import com.placement.portal.repository.ApplicationRepository;
@@ -48,8 +49,36 @@ public class ApplicationService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
+    public List<ApplicationDto> getRecruiterApplications(String recruiterEmail) {
+        List<Application> applications = applicationRepository.findByJobRecruiterUserEmail(recruiterEmail);
+        return applications.stream()
+                .map(this::mapToDto)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void updateApplicationStatus(String recruiterEmail, Long applicationId, String statusStr) {
+        Application application = applicationRepository.findById(applicationId)
+                .orElseThrow(() -> new IllegalArgumentException("Application not found for ID: " + applicationId));
+
+        // Security check: recruiter owns the job posting
+        if (!application.getJob().getRecruiter().getUser().getEmail().equals(recruiterEmail)) {
+            throw new SecurityException("You are not authorized to update this application's status.");
+        }
+
+        try {
+            ApplicationStatus newStatus = ApplicationStatus.valueOf(statusStr.toUpperCase());
+            application.setStatus(newStatus);
+            applicationRepository.save(application);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid status: " + statusStr);
+        }
+    }
+
     private ApplicationDto mapToDto(Application application) {
         Job job = application.getJob();
+        Student student = application.getStudent();
         return ApplicationDto.builder()
                 .id(application.getId())
                 .jobId(job.getId())
@@ -60,6 +89,13 @@ public class ApplicationService {
                 .type(job.getJobType())
                 .status(application.getStatus().name())
                 .appliedDate(application.getAppliedDate())
+                .studentName(student.getName())
+                .studentEmail(student.getUser().getEmail())
+                .studentBranch(student.getBranch())
+                .studentSemester(student.getSemester())
+                .studentCgpa(student.getCgpa())
+                .studentSkills(student.getSkills())
+                .studentResumeUrl(student.getResumeUrl())
                 .build();
     }
 }

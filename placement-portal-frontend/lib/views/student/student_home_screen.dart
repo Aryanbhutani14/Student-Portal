@@ -34,9 +34,13 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
   List<dynamic> _recommendedJobs = [];
   Set<int> _appliedJobIds = {};
 
-  int _activeTab = 0; // 0 = Explore, 1 = Applications
+  int _activeTab = 0; // 0 = Explore, 1 = Bookmarks, 2 = Applications
   List<dynamic> _appliedJobsList = [];
   bool _isLoadingApplications = false;
+
+  List<dynamic> _savedJobsList = [];
+  Set<int> _savedJobIds = {};
+  bool _isLoadingSavedJobs = false;
 
   // Profile info for recommendation matching
   String _studentSkills = "";
@@ -86,7 +90,10 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
       // 2. Fetch Applications to build _appliedJobIds
       await _fetchAppliedJobsOnStartup();
 
-      // 3. Fetch Jobs
+      // 3. Fetch Saved Jobs to build _savedJobIds
+      await _fetchSavedJobsOnStartup();
+
+      // 4. Fetch Jobs
       await _fetchJobs();
     } catch (e) {
       setState(() {
@@ -145,6 +152,222 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
     } catch (e) {
       print('Error loading applications on startup: $e');
     }
+  }
+
+  Future<void> _fetchSavedJobs() async {
+    setState(() {
+      _isLoadingSavedJobs = true;
+    });
+    final url = Uri.parse('http://localhost:8080/saved-jobs');
+    try {
+      final response = await http.get(
+        url,
+        headers: {
+          'Authorization': 'Bearer ${TokenManager.token}',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        setState(() {
+          _savedJobsList = data;
+          _savedJobIds = data.map<int>((job) => job['id'] as int).toSet();
+        });
+      }
+    } catch (e) {
+      print('Error loading saved jobs: $e');
+    } finally {
+      setState(() {
+        _isLoadingSavedJobs = false;
+      });
+    }
+  }
+
+  Future<void> _fetchSavedJobsOnStartup() async {
+    final url = Uri.parse('http://localhost:8080/saved-jobs');
+    try {
+      final response = await http.get(
+        url,
+        headers: {
+          'Authorization': 'Bearer ${TokenManager.token}',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        _savedJobsList = data;
+        _savedJobIds = data.map<int>((job) => job['id'] as int).toSet();
+      }
+    } catch (e) {
+      print('Error loading saved jobs on startup: $e');
+    }
+  }
+
+  Future<void> _toggleSavedJob(int jobId) async {
+    final url = Uri.parse('http://localhost:8080/save-job');
+    try {
+      final response = await http.post(
+        url,
+        headers: {
+          'Authorization': 'Bearer ${TokenManager.token}',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({'jobId': jobId}),
+      );
+
+      if (response.statusCode == 200) {
+        final msg = response.body;
+        setState(() {
+          if (_savedJobIds.contains(jobId)) {
+            _savedJobIds.remove(jobId);
+            _savedJobsList.removeWhere((job) => job['id'] == jobId);
+          } else {
+            _savedJobIds.add(jobId);
+            final matchedJob = _allJobs.firstWhere((j) => j['id'] == jobId, orElse: () => null);
+            if (matchedJob != null) {
+              _savedJobsList.add(matchedJob);
+            }
+          }
+        });
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(msg.isNotEmpty ? msg : 'Bookmark updated.', style: robotoStyle()),
+              backgroundColor: const Color(0xFF14B8A6),
+              duration: const Duration(seconds: 1),
+            ),
+          );
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to update bookmark.', style: robotoStyle()),
+              backgroundColor: Colors.redAccent,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Could not connect to update bookmark.', style: robotoStyle()),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    }
+  }
+
+  Widget _buildStatusTimeline(String currentStatus) {
+    final steps = ['APPLIED', 'UNDER_REVIEW', 'SHORTLISTED', 'INTERVIEW', 'OUTCOME'];
+    final labels = ['Applied', 'Review', 'Shortlist', 'Interview', 'Outcome'];
+    
+    int activeIndex = 0;
+    bool isRejected = currentStatus == 'REJECTED';
+    bool isSelected = currentStatus == 'SELECTED';
+    
+    if (currentStatus == 'APPLIED') {
+      activeIndex = 0;
+    } else if (currentStatus == 'UNDER_REVIEW') {
+      activeIndex = 1;
+    } else if (currentStatus == 'SHORTLISTED') {
+      activeIndex = 2;
+    } else if (currentStatus == 'INTERVIEW') {
+      activeIndex = 3;
+    } else if (isSelected || isRejected) {
+      activeIndex = 4;
+    }
+
+    return Row(
+      children: List.generate(steps.length * 2 - 1, (index) {
+        if (index.isOdd) {
+          final lineIndex = index ~/ 2;
+          final isCompleted = lineIndex < activeIndex;
+          return Expanded(
+            child: Container(
+              height: 2,
+              color: isCompleted
+                  ? (isRejected && lineIndex == 3 ? Colors.redAccent : const Color(0xFF14B8A6))
+                  : Colors.white12,
+            ),
+          );
+        } else {
+          final stepIndex = index ~/ 2;
+          final isCompleted = stepIndex <= activeIndex;
+          final isCurrent = stepIndex == activeIndex;
+          
+          Color nodeColor = Colors.white12;
+          if (isCompleted) {
+            if (stepIndex == 4) {
+              nodeColor = isRejected ? Colors.redAccent : Colors.greenAccent[700]!;
+            } else {
+              nodeColor = const Color(0xFF14B8A6);
+            }
+          }
+
+          String displayLabel = labels[stepIndex];
+          if (stepIndex == 4) {
+            if (isSelected) displayLabel = 'Selected';
+            else if (isRejected) displayLabel = 'Rejected';
+            else displayLabel = 'Outcome';
+          }
+
+          IconData? icon;
+          if (stepIndex == 0) icon = Icons.send_outlined;
+          else if (stepIndex == 1) icon = Icons.rate_review_outlined;
+          else if (stepIndex == 2) icon = Icons.list_alt_outlined;
+          else if (stepIndex == 3) icon = Icons.question_answer_outlined;
+          else if (stepIndex == 4) {
+            if (isRejected) icon = Icons.cancel_outlined;
+            else if (isSelected) icon = Icons.check_circle_outline;
+            else icon = Icons.emoji_events_outlined;
+          }
+
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                width: isCurrent ? 28 : 22,
+                height: isCurrent ? 28 : 22,
+                decoration: BoxDecoration(
+                  color: nodeColor.withOpacity(isCurrent ? 0.2 : 0.1),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: nodeColor,
+                    width: isCurrent ? 2 : 1.5,
+                  ),
+                ),
+                child: Center(
+                  child: Icon(
+                    icon,
+                    size: isCurrent ? 14 : 11,
+                    color: isCompleted ? nodeColor : Colors.white38,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                displayLabel,
+                style: robotoStyle(
+                  color: isCurrent 
+                      ? Colors.white 
+                      : isCompleted 
+                          ? Colors.white70 
+                          : Colors.white30,
+                  fontSize: 9,
+                  fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal,
+                ),
+              ),
+            ],
+          );
+        }
+      }),
+    );
   }
 
   Future<void> _fetchJobs() async {
@@ -307,9 +530,25 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                             ],
                           ),
                         ),
-                        IconButton(
-                          onPressed: () => Navigator.pop(context),
-                          icon: const Icon(Icons.close, color: Colors.white70),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              onPressed: () async {
+                                await _toggleSavedJob(jobId);
+                                setDialogState(() {});
+                              },
+                              icon: Icon(
+                                _savedJobIds.contains(jobId) ? Icons.bookmark : Icons.bookmark_border,
+                                color: _savedJobIds.contains(jobId) ? const Color(0xFF14B8A6) : Colors.white70,
+                                size: 24,
+                              ),
+                            ),
+                            IconButton(
+                              onPressed: () => Navigator.pop(context),
+                              icon: const Icon(Icons.close, color: Colors.white70),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -433,7 +672,9 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                   Expanded(
                     child: _activeTab == 0
                         ? _buildExploreView(isDesktop)
-                        : _buildApplicationsView(isDesktop),
+                        : _activeTab == 1
+                            ? _buildBookmarksView(isDesktop)
+                            : _buildApplicationsView(isDesktop),
                   ),
                 ],
               ),
@@ -482,7 +723,9 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
           const SizedBox(height: 48),
           _buildSidebarItem(0, Icons.explore_outlined, 'Explore', isDesktop),
           const SizedBox(height: 12),
-          _buildSidebarItem(1, Icons.assignment_turned_in_outlined, 'Applications', isDesktop),
+          _buildSidebarItem(1, Icons.bookmark_border_outlined, 'Bookmarks', isDesktop),
+          const SizedBox(height: 12),
+          _buildSidebarItem(2, Icons.assignment_turned_in_outlined, 'Applications', isDesktop),
           const Spacer(),
           // Logout button
           _buildSidebarItem(-1, Icons.logout_outlined, 'Sign Out', isDesktop),
@@ -510,6 +753,8 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
               _activeTab = index;
             });
             if (index == 1) {
+              _fetchSavedJobs();
+            } else if (index == 2) {
               _fetchAppliedJobs();
             } else {
               _loadInitialData();
@@ -556,6 +801,59 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildBookmarksView(bool isDesktop) {
+    if (_isLoadingSavedJobs) {
+      return const Center(
+        child: CircularProgressIndicator(color: Color(0xFF14B8A6)),
+      );
+    }
+
+    if (_savedJobsList.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.bookmark_border_outlined, size: 60, color: Colors.white24),
+            const SizedBox(height: 16),
+            Text(
+              'You haven\'t saved any opportunities yet.',
+              style: robotoStyle(color: Colors.white38, fontSize: 15),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  _activeTab = 0;
+                });
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF14B8A6),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+              child: Text('Explore Opportunities', style: robotoStyle(fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Bookmarks',
+            style: robotoStyle(color: const Color(0xFF14B8A6), fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 12),
+          _buildJobGrid(_savedJobsList, isDesktop),
+        ],
       ),
     );
   }
@@ -651,7 +949,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
         crossAxisCount: isDesktop ? 3 : 1,
         crossAxisSpacing: 16,
         mainAxisSpacing: 16,
-        mainAxisExtent: 220,
+        mainAxisExtent: 310,
       ),
       itemCount: _appliedJobsList.length,
       itemBuilder: (context, index) {
@@ -735,6 +1033,8 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                   ),
                 ],
               ),
+              const SizedBox(height: 16),
+              _buildStatusTimeline(status),
               const Spacer(),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -774,7 +1074,11 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            _activeTab == 0 ? 'BMU Placement Portal' : 'My Applications',
+            _activeTab == 0
+                ? 'BMU Placement Portal'
+                : _activeTab == 1
+                    ? 'Saved Opportunities'
+                    : 'My Applications',
             style: robotoStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
           ),
           ElevatedButton.icon(
@@ -932,6 +1236,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
   Widget _buildJobCard(dynamic job) {
     final int jobId = job['id'];
     final bool alreadyApplied = _appliedJobIds.contains(jobId);
+    final bool isSaved = _savedJobIds.contains(jobId);
 
     return Container(
       padding: const EdgeInsets.all(18),
@@ -954,16 +1259,32 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                   style: robotoStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: const Color(0x2214B8A6),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  job['type'] ?? 'Full-Time',
-                  style: robotoStyle(color: const Color(0xFF14B8A6), fontSize: 11, fontWeight: FontWeight.bold),
-                ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    onPressed: () => _toggleSavedJob(jobId),
+                    icon: Icon(
+                      isSaved ? Icons.bookmark : Icons.bookmark_border,
+                      color: isSaved ? const Color(0xFF14B8A6) : Colors.white60,
+                      size: 20,
+                    ),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0x2214B8A6),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      job['type'] ?? 'Full-Time',
+                      style: robotoStyle(color: const Color(0xFF14B8A6), fontSize: 11, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

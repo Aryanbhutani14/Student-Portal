@@ -17,4 +17,13 @@ public class ApplicationDto {
     private String type;
     private String status;
     private LocalDateTime appliedDate;
+
+    // Student fields for recruiter evaluation
+    private String studentName;
+    private String studentEmail;
+    private String studentBranch;
+    private Integer studentSemester;
+    private Double studentCgpa;
+    private String studentSkills;
+    private String studentResumeUrl;
 }
