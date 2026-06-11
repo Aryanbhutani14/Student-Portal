@@ -79,9 +79,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (response.statusCode == 200) {
         final token = data['token'];
-        print('Logged in successfully. Token: $token');
+        final role = data['role'];
+        print('Logged in successfully. Token: $token, Role: $role');
         TokenManager.token = token;
         TokenManager.email = _emailController.text.trim();
+        TokenManager.role = role;
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -92,7 +94,11 @@ class _LoginScreenState extends State<LoginScreen> {
           );
           Future.delayed(const Duration(milliseconds: 800), () {
             if (mounted) {
-              Navigator.pushReplacementNamed(context, '/student/profile');
+              if (role == 'RECRUITER') {
+                Navigator.pushReplacementNamed(context, '/recruiter/dashboard');
+              } else {
+                Navigator.pushReplacementNamed(context, '/student/home');
+              }
             }
           });
         }

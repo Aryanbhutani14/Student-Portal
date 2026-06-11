@@ -4,6 +4,8 @@ import 'package:placement_portal_frontend/views/auth/signup_screen.dart';
 import 'package:placement_portal_frontend/views/auth/forgot_password_screen.dart';
 import 'package:placement_portal_frontend/views/auth/otp_verification_screen.dart';
 import 'package:placement_portal_frontend/views/student/student_profile_screen.dart';
+import 'package:placement_portal_frontend/views/student/student_home_screen.dart';
+import 'package:placement_portal_frontend/views/recruiter/recruiter_dashboard_screen.dart';
 
 void main() {
   runApp(const BMUPlacementPortalApp());
@@ -39,6 +41,8 @@ class BMUPlacementPortalApp extends StatelessWidget {
           return OtpVerificationScreen(email: email);
         },
         '/student/profile': (context) => const StudentProfileScreen(),
+        '/student/home': (context) => const StudentHomeScreen(),
+        '/recruiter/dashboard': (context) => const RecruiterDashboardScreen(),
       },
     );
   }
