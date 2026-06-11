@@ -78,6 +78,15 @@ Created a structured PostgreSQL database schema (`placement-portal-backend/src/m
 *   **Apply API**: Exposed `POST /apply` matching student profiles with target jobs and preventing duplicate applications.
 *   **Applications Status Dashboard**: Integrated a left navigation bar layout on `student_home_screen.dart` with a dashboard tab rendering applied jobs and progress badges (APPLIED, UNDER_REVIEW, SHORTLISTED, SELECTED, REJECTED).
 
+### 📌 Phase 8 — Application Tracking & Bookmarking
+*   **Bookmarks & Saved Jobs**:
+  - Implemented `POST /save-job` to toggle and `GET /saved-jobs` to fetch student bookmarks.
+  - Added heart/bookmark icons to opportunity cards and the details dialog, with a dedicated Bookmarks navigation tab.
+*   **Status Timeline & Recruiter Updates**:
+  - Implemented `GET /recruiter/applications` to retrieve applicant data with candidate profile info.
+  - Implemented `PATCH /application/status` for recruiters to transition application states.
+  - Designed a horizontal visual progression timeline stepper on student application cards indicating statuses: `Applied` ➔ `Review` ➔ `Shortlist` ➔ `Interview` ➔ `Outcome`.
+
 ---
 
 ## 🎨 Global UI Theme Redesign
@@ -190,6 +199,14 @@ flutter run -d chrome
 | :--- | :--- | :--- | :--- |
 | **POST** | `/apply` | Applies student profile to job. | `{"jobId": 1}` |
 | **GET** | `/student/applications` | Fetches student's job applications and status updates. | *(Requires Student Bearer Token)* |
+| **GET** | `/recruiter/applications` | Fetches applications submitted to recruiter's jobs with candidate metrics. | *(Requires Recruiter Bearer Token)* |
+| **PATCH** | `/application/status` | Recruiter updates application status. | `{"applicationId": 1, "status": "SHORTLISTED"}` |
+
+### Bookmarks
+| Method | Endpoint | Description | Payload Example |
+| :--- | :--- | :--- | :--- |
+| **POST** | `/save-job` | Bookmarks/unbookmarks a job listing. | `{"jobId": 1}` |
+| **GET** | `/saved-jobs` | Fetches student's bookmarked jobs. | *(Requires Student Bearer Token)* |
 
 ---
 
