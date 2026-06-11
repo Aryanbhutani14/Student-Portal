@@ -13,7 +13,7 @@ TextStyle outfitTextStyle({
     fontSize: fontSize,
     fontWeight: fontWeight,
     height: height,
-    fontFamily: 'sans-serif',
+    fontFamily: 'Roboto',
   );
 }
 
@@ -28,7 +28,7 @@ TextStyle interTextStyle({
     fontSize: fontSize,
     fontWeight: fontWeight,
     height: height,
-    fontFamily: 'sans-serif',
+    fontFamily: 'Roboto',
   );
 }
 

@@ -17,6 +17,7 @@ class BMUPlacementPortalApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         brightness: Brightness.dark,
+        fontFamily: 'Roboto',
         primaryColor: const Color(0xFF6366F1),
         scaffoldBackgroundColor: const Color(0xFF0F0C1B),
         colorScheme: const ColorScheme.dark(
