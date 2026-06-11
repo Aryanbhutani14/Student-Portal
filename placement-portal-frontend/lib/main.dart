@@ -3,6 +3,7 @@ import 'package:placement_portal_frontend/views/auth/login_screen.dart';
 import 'package:placement_portal_frontend/views/auth/signup_screen.dart';
 import 'package:placement_portal_frontend/views/auth/forgot_password_screen.dart';
 import 'package:placement_portal_frontend/views/auth/otp_verification_screen.dart';
+import 'package:placement_portal_frontend/views/student/student_profile_screen.dart';
 
 void main() {
   runApp(const BMUPlacementPortalApp());
@@ -37,6 +38,7 @@ class BMUPlacementPortalApp extends StatelessWidget {
           final email = ModalRoute.of(context)!.settings.arguments as String? ?? '';
           return OtpVerificationScreen(email: email);
         },
+        '/student/profile': (context) => const StudentProfileScreen(),
       },
     );
   }

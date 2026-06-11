@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:placement_portal_frontend/utils/token_manager.dart';
 
 TextStyle outfitTextStyle({
   Color? color,
@@ -79,14 +80,21 @@ class _LoginScreenState extends State<LoginScreen> {
       if (response.statusCode == 200) {
         final token = data['token'];
         print('Logged in successfully. Token: $token');
-        // In a real app, save token to local storage/shared preferences
+        TokenManager.token = token;
+        TokenManager.email = _emailController.text.trim();
+
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Login Successful! Token received.', style: interTextStyle()),
+              content: Text('Login Successful! Redirecting...', style: interTextStyle()),
               backgroundColor: Colors.greenAccent[700],
             ),
           );
+          Future.delayed(const Duration(milliseconds: 800), () {
+            if (mounted) {
+              Navigator.pushReplacementNamed(context, '/student/profile');
+            }
+          });
         }
       } else {
         final errorMsg = data['error'] ?? 'Login failed. Please try again.';

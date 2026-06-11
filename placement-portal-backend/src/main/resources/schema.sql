@@ -29,6 +29,9 @@ CREATE TABLE students (
     semester INT,
     cgpa NUMERIC(4, 2),
     skills TEXT,
+    certifications TEXT,
+    projects TEXT,
+    experience TEXT,
     github VARCHAR(255),
     linkedin VARCHAR(255),
     resume_url VARCHAR(255)

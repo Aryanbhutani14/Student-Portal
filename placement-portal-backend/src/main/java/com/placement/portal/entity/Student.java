@@ -35,6 +35,15 @@ public class Student {
     @Column(columnDefinition = "TEXT")
     private String skills;
 
+    @Column(columnDefinition = "TEXT")
+    private String certifications;
+
+    @Column(columnDefinition = "TEXT")
+    private String projects;
+
+    @Column(columnDefinition = "TEXT")
+    private String experience;
+
     private String github;
 
     private String linkedin;
