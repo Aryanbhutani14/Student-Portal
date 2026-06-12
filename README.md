@@ -95,6 +95,14 @@ Created a structured PostgreSQL database schema (`placement-portal-backend/src/m
   - Admin form to post notices dynamically categorized as `Hackathons`, `Seminars`, `Workshops`, or `Notice`.
   - Created global announcement feed pages integrated across Student, Recruiter, and Admin dashboards showing category-colored badges and descriptions.
 
+### 📌 Phase 10 — Analytics & Flutter Charts
+*   **Backend Statistics Calculations**: Exposed calculations computing placement rate percentages, branch placement counts, and the highest package offered using a salary string parser.
+*   **Analytics REST API**: Implemented secure `GET /admin/analytics` endpoint.
+*   **Data Seeding**: Seeding unplaced and successfully placed student entries, producing a 50% baseline placement rate.
+*   **Dashboard Visualizations**: Integrated the `fl_chart` library inside the Admin Stats panel to display:
+  - **Pie Chart**: Visualizes placement distribution ratio (Placed vs. Unplaced students) with central rate readouts.
+  - **Bar Chart**: Visualizes placed counts per branch with custom gradient rods and dynamic tooltip overlays.
+
 ---
 
 ## 🎨 Global UI Theme Redesign
@@ -216,10 +224,11 @@ flutter run -d chrome
 | **POST** | `/save-job` | Bookmarks/unbookmarks a job listing. | `{"jobId": 1}` |
 | **GET** | `/saved-jobs` | Fetches student's bookmarked jobs. | *(Requires Student Bearer Token)* |
 
-### Admin & Announcements (Phase 9)
+### Admin, Announcements & Analytics (Phases 9 & 10)
 | Method | Endpoint | Description | Payload Example |
 | :--- | :--- | :--- | :--- |
 | **GET** | `/admin/stats` | Fetches total student, recruiter, and job counts. | *(Requires Admin Bearer Token)* |
+| **GET** | `/admin/analytics` | Fetches placement rates, highest package, and branch-wise placement count maps. | *(Requires Admin Bearer Token)* |
 | **GET** | `/admin/recruiters` | Fetches all recruiter profiles and verification status. | *(Requires Admin Bearer Token)* |
 | **POST** | `/admin/recruiters/{id}/verify` | Updates verification status of a recruiter. | `POST /admin/recruiters/1/verify?verified=true` *(Requires Admin Bearer Token)* |
 | **GET** | `/admin/students` | Fetches student list. | *(Requires Admin Bearer Token)* |
