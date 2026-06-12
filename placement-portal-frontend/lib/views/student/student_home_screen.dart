@@ -98,6 +98,9 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
 
       // 4. Fetch Jobs
       await _fetchJobs();
+
+      // 5. Fetch Announcements
+      await _fetchAnnouncements();
     } catch (e) {
       setState(() {
         _errorMessage = 'Could not load data. Ensure the backend is running.';
@@ -1205,6 +1208,213 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
     );
   }
 
+  Widget _buildNotificationBell(List<dynamic> announcements) {
+    final count = announcements.length;
+    return PopupMenuButton<int>(
+      tooltip: 'Announcements',
+      icon: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          const Icon(Icons.notifications_outlined, color: Colors.white70, size: 24),
+          if (count > 0)
+            Positioned(
+              right: -2,
+              top: -2,
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: const BoxDecoration(
+                  color: Colors.redAccent,
+                  shape: BoxShape.circle,
+                ),
+                constraints: const BoxConstraints(
+                  minWidth: 16,
+                  minHeight: 16,
+                ),
+                child: Text(
+                  count.toString(),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 8,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+        ],
+      ),
+      offset: const Offset(0, 40),
+      color: const Color(0xFF111827),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: Colors.white.withOpacity(0.08)),
+      ),
+      onSelected: (val) {
+        if (val == -1) {
+          setState(() {
+            _activeTab = 3;
+          });
+        }
+      },
+      itemBuilder: (context) {
+        if (announcements.isEmpty) {
+          return [
+            PopupMenuItem<int>(
+              enabled: false,
+              child: Container(
+                width: 280,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.notifications_off_outlined, color: Colors.white24, size: 36),
+                    const SizedBox(height: 8),
+                    Text(
+                      'No new announcements',
+                      style: robotoStyle(color: Colors.white38, fontSize: 13),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ];
+        }
+
+        final List<PopupMenuEntry<int>> items = [];
+        
+        items.add(
+          PopupMenuItem<int>(
+            enabled: false,
+            child: Container(
+              width: 320,
+              padding: const EdgeInsets.only(bottom: 8),
+              decoration: BoxDecoration(
+                border: Border(bottom: BorderSide(color: Colors.white.withOpacity(0.05))),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Announcements',
+                    style: robotoStyle(color: const Color(0xFF14B8A6), fontSize: 14, fontWeight: FontWeight.bold),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: const Color(0x2214B8A6),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      '$count New',
+                      style: robotoStyle(color: const Color(0xFF14B8A6), fontSize: 10, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+
+        final recentAnnouncements = announcements.take(5).toList();
+        for (var ann in recentAnnouncements) {
+          final title = ann['title'] ?? 'Global Announcement';
+          final description = ann['description'] ?? '';
+          final dateStr = ann['date'] != null ? ann['date'].toString().substring(0, 10) : '';
+
+          String displayType = 'Notice';
+          String displayTitle = title;
+          if (title.toString().startsWith('[')) {
+            final closeIndex = title.toString().indexOf(']');
+            if (closeIndex != -1) {
+              displayType = title.toString().substring(1, closeIndex);
+              displayTitle = title.toString().substring(closeIndex + 1).trim();
+            }
+          }
+
+          Color badgeColor = Colors.tealAccent.withOpacity(0.15);
+          Color badgeTextColor = Colors.tealAccent;
+          if (displayType == 'Hackathon') {
+            badgeColor = Colors.redAccent.withOpacity(0.15);
+            badgeTextColor = Colors.redAccent;
+          } else if (displayType == 'Seminar') {
+            badgeColor = Colors.purpleAccent.withOpacity(0.15);
+            badgeTextColor = Colors.purpleAccent;
+          } else if (displayType == 'Workshop') {
+            badgeColor = Colors.orangeAccent.withOpacity(0.15);
+            badgeTextColor = Colors.orangeAccent;
+          }
+
+          items.add(
+            PopupMenuItem<int>(
+              value: -1,
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: badgeColor,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            displayType,
+                            style: robotoStyle(color: badgeTextColor, fontSize: 9, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        const Spacer(),
+                        Text(
+                          dateStr,
+                          style: robotoStyle(color: Colors.white24, fontSize: 10),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      displayTitle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: robotoStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      description,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: robotoStyle(color: Colors.white60, fontSize: 11, height: 1.3),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }
+
+        items.add(
+          PopupMenuItem<int>(
+            value: -1,
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              decoration: BoxDecoration(
+                border: Border(top: BorderSide(color: Colors.white.withOpacity(0.05))),
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                'View All Announcements',
+                style: robotoStyle(color: const Color(0xFF3B82F6), fontSize: 12, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ),
+        );
+
+        return items;
+      },
+    );
+  }
+
   Widget _buildHeader() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
@@ -1225,25 +1435,31 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                         : 'Global Announcements',
             style: robotoStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
           ),
-          ElevatedButton.icon(
-            onPressed: () {
-              Navigator.pushNamed(context, '/student/profile');
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF111827),
-              foregroundColor: Colors.white,
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-                side: BorderSide(color: Colors.white.withOpacity(0.1)),
+          Row(
+            children: [
+              _buildNotificationBell(_announcementsList),
+              const SizedBox(width: 16),
+              ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.pushNamed(context, '/student/profile');
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF111827),
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(color: Colors.white.withOpacity(0.1)),
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                ),
+                icon: const Icon(Icons.person_outlined, size: 18, color: Color(0xFF3B82F6)),
+                label: Text(
+                  'My Profile',
+                  style: robotoStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                ),
               ),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            ),
-            icon: const Icon(Icons.person_outlined, size: 18, color: Color(0xFF3B82F6)),
-            label: Text(
-              'My Profile',
-              style: robotoStyle(fontSize: 13, fontWeight: FontWeight.w600),
-            ),
+            ],
           ),
         ],
       ),
