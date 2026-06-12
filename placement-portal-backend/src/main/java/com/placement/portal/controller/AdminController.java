@@ -1,6 +1,7 @@
 package com.placement.portal.controller;
 
 import com.placement.portal.dto.AdminStatsDto;
+import com.placement.portal.dto.AnalyticsDto;
 import com.placement.portal.dto.RecruiterDto;
 import com.placement.portal.dto.StudentProfileDto;
 import com.placement.portal.service.AdminService;
@@ -33,6 +34,15 @@ public class AdminController {
         }
         AdminStatsDto stats = adminService.getAdminStats();
         return ResponseEntity.ok(stats);
+    }
+
+    @GetMapping("/analytics")
+    public ResponseEntity<?> getAnalytics(Principal principal) {
+        if (principal == null || !isAdmin(principal)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Only admins can access analytics.");
+        }
+        AnalyticsDto analytics = adminService.getAnalytics();
+        return ResponseEntity.ok(analytics);
     }
 
     @GetMapping("/recruiters")

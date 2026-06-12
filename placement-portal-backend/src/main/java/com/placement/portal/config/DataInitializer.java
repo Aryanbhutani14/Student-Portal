@@ -21,11 +21,15 @@ public class DataInitializer implements CommandLineRunner {
     private final StudentRepository studentRepository;
     private final JobRepository jobRepository;
     private final PasswordEncoder passwordEncoder;
+    private final ApplicationRepository applicationRepository;
+    private final AnnouncementRepository announcementRepository;
 
     @Override
     public void run(String... args) throws Exception {
         log.info("Cleaning database to perform clean seed of demo data...");
         try {
+            applicationRepository.deleteAll();
+            announcementRepository.deleteAll();
             jobRepository.deleteAll();
             recruiterRepository.deleteAll();
             studentRepository.deleteAll();
@@ -87,6 +91,26 @@ public class DataInitializer implements CommandLineRunner {
                 .linkedin("https://linkedin.com/in/aryanbhutani")
                 .build();
         studentRepository.save(student);
+
+        // 3b. Create Second Student
+        User userStudent2 = User.builder()
+                .email("student.neha@bmu.edu.in")
+                .password(passwordEncoder.encode("password"))
+                .role(Role.STUDENT)
+                .isVerified(true)
+                .build();
+
+        Student student2 = Student.builder()
+                .user(userStudent2)
+                .name("Neha Sharma")
+                .branch("Electronics & Communication Engineering")
+                .semester(6)
+                .cgpa(8.7)
+                .skills("python, embedded systems, iot")
+                .github("https://github.com/nehasharma")
+                .linkedin("https://linkedin.com/in/nehasharma")
+                .build();
+        studentRepository.save(student2);
 
         // 4. Create Admin
         User userAdmin = User.builder()
@@ -157,6 +181,21 @@ public class DataInitializer implements CommandLineRunner {
                 .build();
 
         jobRepository.saveAll(List.of(jobGoogle1, jobGoogle2, jobGoogle3));
+
+        // 6. Seed applications for analytics verification
+        Application app1 = Application.builder()
+                .student(student)
+                .job(jobGoogle1)
+                .status(ApplicationStatus.SELECTED)
+                .build();
+
+        Application app2 = Application.builder()
+                .student(student2)
+                .job(jobApple2)
+                .status(ApplicationStatus.UNDER_REVIEW)
+                .build();
+
+        applicationRepository.saveAll(List.of(app1, app2));
 
         log.info("Successfully seeded dummy recruiter, student, and job opportunity data!");
     }

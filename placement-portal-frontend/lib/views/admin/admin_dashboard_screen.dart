@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:placement_portal_frontend/utils/token_manager.dart';
+import 'package:fl_chart/fl_chart.dart';
 
 TextStyle robotoStyle({
   Color? color,
@@ -36,6 +37,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   int _totalStudents = 0;
   int _totalRecruiters = 0;
   int _totalJobs = 0;
+  double _placementPercentage = 0.0;
+  String _highestPackage = 'N/A';
+  Map<String, dynamic> _branchWisePlacements = {};
 
   // Recruiters
   bool _isLoadingRecruiters = true;
@@ -87,7 +91,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     setState(() {
       _isLoadingStats = true;
     });
-    final url = Uri.parse('http://localhost:8080/admin/stats');
+    final url = Uri.parse('http://localhost:8080/admin/analytics');
     try {
       final response = await http.get(
         url,
@@ -103,6 +107,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           _totalStudents = data['totalStudents'] ?? 0;
           _totalRecruiters = data['totalRecruiters'] ?? 0;
           _totalJobs = data['totalJobs'] ?? 0;
+          _placementPercentage = (data['placementPercentage'] as num?)?.toDouble() ?? 0.0;
+          _highestPackage = data['highestPackage'] ?? 'N/A';
+          _branchWisePlacements = Map<String, dynamic>.from(data['branchWisePlacements'] ?? {});
           _isLoadingStats = false;
         });
       } else {
@@ -557,7 +564,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       return const Center(child: CircularProgressIndicator(color: Color(0xFF14B8A6)));
     }
 
-    return Padding(
+    return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -571,10 +578,12 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               ? Row(
                   children: [
                     Expanded(child: _buildStatCard('Total Students', _totalStudents.toString(), Icons.school, const Color(0xFF3B82F6))),
-                    const SizedBox(width: 20),
+                    const SizedBox(width: 16),
                     Expanded(child: _buildStatCard('Recruiters Registered', _totalRecruiters.toString(), Icons.business, const Color(0xFF14B8A6))),
-                    const SizedBox(width: 20),
+                    const SizedBox(width: 16),
                     Expanded(child: _buildStatCard('Opportunities Posted', _totalJobs.toString(), Icons.work, Colors.orangeAccent)),
+                    const SizedBox(width: 16),
+                    Expanded(child: _buildStatCard('Placement Rate', '${_placementPercentage.toStringAsFixed(1)}%', Icons.analytics_outlined, Colors.purpleAccent)),
                   ],
                 )
               : Column(
@@ -584,6 +593,53 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     _buildStatCard('Recruiters Registered', _totalRecruiters.toString(), Icons.business, const Color(0xFF14B8A6)),
                     const SizedBox(height: 16),
                     _buildStatCard('Opportunities Posted', _totalJobs.toString(), Icons.work, Colors.orangeAccent),
+                    const SizedBox(height: 16),
+                    _buildStatCard('Placement Rate', '${_placementPercentage.toStringAsFixed(1)}%', Icons.analytics_outlined, Colors.purpleAccent),
+                  ],
+                ),
+          const SizedBox(height: 20),
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: const Color(0xFF111827),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.white.withOpacity(0.04)),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.star_outline, color: Colors.yellowAccent, size: 24),
+                    const SizedBox(width: 12),
+                    Text(
+                      'Highest Package Placed',
+                      style: robotoStyle(color: Colors.white70, fontSize: 14, fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+                Text(
+                  _highestPackage,
+                  style: robotoStyle(color: const Color(0xFF14B8A6), fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 28),
+          isDesktop
+              ? Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(flex: 4, child: _buildPieChartCard()),
+                    const SizedBox(width: 24),
+                    Expanded(flex: 5, child: _buildBarChartCard()),
+                  ],
+                )
+              : Column(
+                  children: [
+                    _buildPieChartCard(),
+                    const SizedBox(height: 24),
+                    _buildBarChartCard(),
                   ],
                 ),
         ],
@@ -593,7 +649,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
   Widget _buildStatCard(String title, String count, IconData icon, Color color) {
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: const Color(0xFF111827),
         borderRadius: BorderRadius.circular(16),
@@ -602,29 +658,286 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  title,
+                  style: robotoStyle(color: Colors.white38, fontSize: 12, fontWeight: FontWeight.w500),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  count,
+                  style: robotoStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: color, size: 24),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPieChartCard() {
+    return Container(
+      height: 380,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: const Color(0xFF111827),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withOpacity(0.04)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Placement Distribution Ratio',
+            style: robotoStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Ratio of placed vs unplaced students in the portal database.',
+            style: robotoStyle(color: Colors.white38, fontSize: 12),
+          ),
+          const SizedBox(height: 20),
+          Expanded(
+            child: _buildPieChart(),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(
-                title,
-                style: robotoStyle(color: Colors.white38, fontSize: 13, fontWeight: FontWeight.w500),
+              Container(width: 12, height: 12, decoration: BoxDecoration(color: const Color(0xFF14B8A6), borderRadius: BorderRadius.circular(3))),
+              const SizedBox(width: 8),
+              Text('Placed', style: robotoStyle(color: Colors.white70, fontSize: 11)),
+              const SizedBox(width: 24),
+              Container(width: 12, height: 12, decoration: BoxDecoration(color: const Color(0xFF374151), borderRadius: BorderRadius.circular(3))),
+              const SizedBox(width: 8),
+              Text('Unplaced', style: robotoStyle(color: Colors.white70, fontSize: 11)),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPieChart() {
+    final double placed = _placementPercentage;
+    final double unplaced = 100.0 - placed;
+
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        PieChart(
+          PieChartData(
+            sectionsSpace: 4,
+            centerSpaceRadius: 65,
+            startDegreeOffset: -90,
+            sections: [
+              PieChartSectionData(
+                color: const Color(0xFF14B8A6),
+                value: placed > 0 ? placed : 0.001,
+                title: placed > 0 ? '${placed.toStringAsFixed(1)}%' : '',
+                radius: 24,
+                titleStyle: robotoStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
               ),
-              const SizedBox(height: 12),
-              Text(
-                count,
-                style: robotoStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold),
+              PieChartSectionData(
+                color: const Color(0xFF374151),
+                value: unplaced > 0 ? unplaced : 0.001,
+                title: unplaced > 0 ? '${unplaced.toStringAsFixed(1)}%' : '',
+                radius: 20,
+                titleStyle: robotoStyle(color: Colors.white70, fontSize: 10),
               ),
             ],
           ),
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
+        ),
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              '${placed.toStringAsFixed(1)}%',
+              style: robotoStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
             ),
-            child: Icon(icon, color: color, size: 28),
+            const SizedBox(height: 2),
+            Text(
+              'Placement Rate',
+              style: robotoStyle(color: Colors.white38, fontSize: 11),
+            ),
+          ],
+        )
+      ],
+    );
+  }
+
+  Widget _buildBarChartCard() {
+    return Container(
+      height: 380,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: const Color(0xFF111827),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withOpacity(0.04)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Branch-wise Student Placements',
+            style: robotoStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Number of placed students across different academic branches.',
+            style: robotoStyle(color: Colors.white38, fontSize: 12),
+          ),
+          const SizedBox(height: 24),
+          Expanded(
+            child: _buildBarChart(),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildBarChart() {
+    if (_branchWisePlacements.isEmpty) {
+      return Center(
+        child: Text(
+          'No branch placement data available.',
+          style: robotoStyle(color: Colors.white24, fontSize: 13),
+        ),
+      );
+    }
+
+    final List<MapEntry<String, dynamic>> entries = _branchWisePlacements.entries.toList();
+    
+    double maxVal = 5.0;
+    for (var entry in entries) {
+      final val = (entry.value as num).toDouble();
+      if (val > maxVal) {
+        maxVal = val;
+      }
+    }
+    maxVal = (maxVal + 2).ceilToDouble();
+
+    return BarChart(
+      BarChartData(
+        alignment: BarChartAlignment.spaceAround,
+        maxY: maxVal,
+        barTouchData: BarTouchData(
+          touchTooltipData: BarTouchTooltipData(
+            getTooltipColor: (group) => const Color(0xFF1F2937),
+            getTooltipItem: (group, groupIndex, rod, rodIndex) {
+              final branchName = entries[group.x.toInt()].key;
+              return BarTooltipItem(
+                '$branchName\n',
+                robotoStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+                children: <TextSpan>[
+                  TextSpan(
+                    text: '${rod.toY.toInt()} Placed',
+                    style: robotoStyle(color: const Color(0xFF14B8A6), fontSize: 12, fontWeight: FontWeight.bold),
+                  ),
+                ],
+              );
+            },
+          ),
+        ),
+        titlesData: FlTitlesData(
+          show: true,
+          bottomTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              getTitlesWidget: (value, meta) {
+                final int idx = value.toInt();
+                if (idx >= 0 && idx < entries.length) {
+                  final String rawName = entries[idx].key;
+                  String shortName = rawName;
+                  if (rawName.toLowerCase().contains('computer science')) shortName = 'CSE';
+                  else if (rawName.toLowerCase().contains('electronics')) shortName = 'ECE';
+                  else if (rawName.toLowerCase().contains('mechanical')) shortName = 'ME';
+                  else if (rawName.toLowerCase().contains('civil')) shortName = 'CE';
+                  else if (rawName.length > 8) shortName = '${rawName.substring(0, 6)}...';
+
+                  return SideTitleWidget(
+                    axisSide: meta.axisSide,
+                    space: 8,
+                    child: Text(
+                      shortName,
+                      style: robotoStyle(color: Colors.white60, fontSize: 11, fontWeight: FontWeight.w500),
+                    ),
+                  );
+                }
+                return const SizedBox.shrink();
+              },
+              reservedSize: 30,
+            ),
+          ),
+          leftTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              interval: 1,
+              getTitlesWidget: (value, meta) {
+                return SideTitleWidget(
+                  axisSide: meta.axisSide,
+                  space: 8,
+                  child: Text(
+                    value.toInt().toString(),
+                    style: robotoStyle(color: Colors.white38, fontSize: 10),
+                  ),
+                );
+              },
+              reservedSize: 28,
+            ),
+          ),
+          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+        ),
+        gridData: FlGridData(
+          show: true,
+          drawVerticalLine: false,
+          getDrawingHorizontalLine: (value) => FlLine(
+            color: Colors.white.withOpacity(0.05),
+            strokeWidth: 1,
+          ),
+        ),
+        borderData: FlBorderData(show: false),
+        barGroups: List.generate(entries.length, (index) {
+          final val = (entries[index].value as num).toDouble();
+          return BarChartGroupData(
+            x: index,
+            barRods: [
+              BarChartRodData(
+                toY: val,
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF3B82F6), Color(0xFF14B8A6)],
+                  begin: Alignment.bottomCenter,
+                  end: Alignment.topCenter,
+                ),
+                width: 20,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(5),
+                  topRight: Radius.circular(5),
+                ),
+                backDrawRodData: BackgroundBarChartRodData(
+                  show: true,
+                  toY: maxVal,
+                  color: Colors.white.withOpacity(0.02),
+                ),
+              ),
+            ],
+          );
+        }),
       ),
     );
   }
