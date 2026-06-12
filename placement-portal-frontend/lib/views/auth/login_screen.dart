@@ -96,6 +96,8 @@ class _LoginScreenState extends State<LoginScreen> {
             if (mounted) {
               if (role == 'RECRUITER') {
                 Navigator.pushReplacementNamed(context, '/recruiter/dashboard');
+              } else if (role == 'ADMIN') {
+                Navigator.pushReplacementNamed(context, '/admin/dashboard');
               } else {
                 Navigator.pushReplacementNamed(context, '/student/home');
               }

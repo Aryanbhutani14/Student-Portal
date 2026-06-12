@@ -87,6 +87,14 @@ Created a structured PostgreSQL database schema (`placement-portal-backend/src/m
   - Implemented `PATCH /application/status` for recruiters to transition application states.
   - Designed a horizontal visual progression timeline stepper on student application cards indicating statuses: `Applied` ➔ `Review` ➔ `Shortlist` ➔ `Interview` ➔ `Outcome`.
 
+### 📌 Phase 9 — Admin Dashboard & Announcement Module
+*   **System Statistics Analytics**: Added dynamic total metrics panel tracking students, recruiters, and opportunities in the system.
+*   **Recruiter Verification Approvals**: Admins can verify/unverify recruiter users using toggle switches, locking/unlocking their privileges.
+*   **Student Profile Database**: Exposed a detailed read-only list view of students with branches, semesters, and CGPA metrics.
+*   **Announcement Module**:
+  - Admin form to post notices dynamically categorized as `Hackathons`, `Seminars`, `Workshops`, or `Notice`.
+  - Created global announcement feed pages integrated across Student, Recruiter, and Admin dashboards showing category-colored badges and descriptions.
+
 ---
 
 ## 🎨 Global UI Theme Redesign
@@ -207,6 +215,16 @@ flutter run -d chrome
 | :--- | :--- | :--- | :--- |
 | **POST** | `/save-job` | Bookmarks/unbookmarks a job listing. | `{"jobId": 1}` |
 | **GET** | `/saved-jobs` | Fetches student's bookmarked jobs. | *(Requires Student Bearer Token)* |
+
+### Admin & Announcements (Phase 9)
+| Method | Endpoint | Description | Payload Example |
+| :--- | :--- | :--- | :--- |
+| **GET** | `/admin/stats` | Fetches total student, recruiter, and job counts. | *(Requires Admin Bearer Token)* |
+| **GET** | `/admin/recruiters` | Fetches all recruiter profiles and verification status. | *(Requires Admin Bearer Token)* |
+| **POST** | `/admin/recruiters/{id}/verify` | Updates verification status of a recruiter. | `POST /admin/recruiters/1/verify?verified=true` *(Requires Admin Bearer Token)* |
+| **GET** | `/admin/students` | Fetches student list. | *(Requires Admin Bearer Token)* |
+| **POST** | `/announcement` | Creates a global announcement. | `{"title": "[Hackathon] Cyber Hack", "description": "Details..."}` *(Requires Admin Bearer Token)* |
+| **GET** | `/announcements` | Fetches global announcements feed in descending date order. | *(Requires Bearer Token)* |
 
 ---
 

@@ -88,6 +88,15 @@ public class DataInitializer implements CommandLineRunner {
                 .build();
         studentRepository.save(student);
 
+        // 4. Create Admin
+        User userAdmin = User.builder()
+                .email("admin@bmu.edu.in")
+                .password(passwordEncoder.encode("password"))
+                .role(Role.ADMIN)
+                .isVerified(true)
+                .build();
+        userRepository.save(userAdmin);
+
         // 4. Seed Jobs for Apple
         Job jobApple1 = Job.builder()
                 .title("Software Engineering Intern")

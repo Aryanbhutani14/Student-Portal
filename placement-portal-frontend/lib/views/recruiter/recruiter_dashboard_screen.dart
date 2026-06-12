@@ -28,7 +28,7 @@ class RecruiterDashboardScreen extends StatefulWidget {
 }
 
 class _RecruiterDashboardScreenState extends State<RecruiterDashboardScreen> {
-  int _activeTab = 0; // 0 = My Postings, 1 = Post Job, 2 = Applications
+  int _activeTab = 0; // 0 = My Postings, 1 = Post Job, 2 = Applications, 3 = Announcements
   bool _isLoading = true;
   bool _isSubmitting = false;
   String? _errorMessage;
@@ -37,6 +37,9 @@ class _RecruiterDashboardScreenState extends State<RecruiterDashboardScreen> {
   List<dynamic> _applications = [];
   bool _isLoadingApplications = false;
   final Set<int> _updatingStatusIds = {};
+
+  List<dynamic> _announcementsList = [];
+  bool _isLoadingAnnouncements = false;
 
   // Post Job Form fields
   final _formKey = GlobalKey<FormState>();
@@ -64,6 +67,135 @@ class _RecruiterDashboardScreenState extends State<RecruiterDashboardScreen> {
     _salaryController.dispose();
     _skillsController.dispose();
     super.dispose();
+  }
+
+  Future<void> _fetchAnnouncements() async {
+    setState(() {
+      _isLoadingAnnouncements = true;
+    });
+    final url = Uri.parse('http://localhost:8080/announcements');
+    try {
+      final response = await http.get(
+        url,
+        headers: {
+          'Authorization': 'Bearer ${TokenManager.token}',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        setState(() {
+          _announcementsList = data;
+        });
+      }
+    } catch (e) {
+      print('Error loading announcements: $e');
+    } finally {
+      setState(() {
+        _isLoadingAnnouncements = false;
+      });
+    }
+  }
+
+  Widget _buildAnnouncementsView(bool isDesktop) {
+    if (_isLoadingAnnouncements) {
+      return const Center(child: CircularProgressIndicator(color: Color(0xFF14B8A6)));
+    }
+
+    if (_announcementsList.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.campaign_outlined, size: 60, color: Colors.white24),
+            const SizedBox(height: 16),
+            Text(
+              'No announcements posted yet.',
+              style: robotoStyle(color: Colors.white38, fontSize: 15),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(24),
+      itemCount: _announcementsList.length,
+      itemBuilder: (context, index) {
+        final ann = _announcementsList[index];
+        final title = ann['title'] ?? 'Global Announcement';
+        final description = ann['description'] ?? '';
+        final dateStr = ann['date'] != null ? ann['date'].toString().substring(0, 10) : '';
+
+        String displayType = 'Notice';
+        String displayTitle = title;
+        if (title.toString().startsWith('[')) {
+          final closeIndex = title.toString().indexOf(']');
+          if (closeIndex != -1) {
+            displayType = title.toString().substring(1, closeIndex);
+            displayTitle = title.toString().substring(closeIndex + 1).trim();
+          }
+        }
+
+        Color badgeColor = Colors.white24;
+        if (displayType == 'Hackathon') badgeColor = Colors.redAccent.withOpacity(0.2);
+        if (displayType == 'Seminar') badgeColor = Colors.purpleAccent.withOpacity(0.2);
+        if (displayType == 'Workshop') badgeColor = Colors.orangeAccent.withOpacity(0.2);
+        if (displayType == 'Notice') badgeColor = Colors.tealAccent.withOpacity(0.2);
+
+        Color badgeTextColor = Colors.white;
+        if (displayType == 'Hackathon') badgeTextColor = Colors.redAccent;
+        if (displayType == 'Seminar') badgeTextColor = Colors.purpleAccent;
+        if (displayType == 'Workshop') badgeTextColor = Colors.orangeAccent;
+        if (displayType == 'Notice') badgeTextColor = Colors.tealAccent;
+
+        return Container(
+          margin: const EdgeInsets.only(bottom: 16),
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: const Color(0xFF111827),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.white.withOpacity(0.04)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: badgeColor,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      displayType,
+                      style: robotoStyle(color: badgeTextColor, fontSize: 10, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  Text(
+                    dateStr,
+                    style: robotoStyle(color: Colors.white24, fontSize: 11),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Text(
+                displayTitle,
+                style: robotoStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                description,
+                style: robotoStyle(color: Colors.white70, fontSize: 13, height: 1.4),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   Future<void> _fetchApplications() async {
@@ -560,7 +692,9 @@ class _RecruiterDashboardScreenState extends State<RecruiterDashboardScreen> {
                         ? _buildPostingsView(isDesktop)
                         : _activeTab == 1
                             ? _buildPostJobForm()
-                            : _buildApplicationsView(isDesktop),
+                            : _activeTab == 2
+                                ? _buildApplicationsView(isDesktop)
+                                : _buildAnnouncementsView(isDesktop),
                   ),
                 ],
               ),
@@ -612,6 +746,8 @@ class _RecruiterDashboardScreenState extends State<RecruiterDashboardScreen> {
           _buildSidebarItem(1, Icons.post_add_outlined, 'Post Opportunity', isDesktop),
           const SizedBox(height: 12),
           _buildSidebarItem(2, Icons.people_outline, 'Applications', isDesktop),
+          const SizedBox(height: 12),
+          _buildSidebarItem(3, Icons.campaign_outlined, 'Announcements', isDesktop),
           const Spacer(),
           // Logout button
           _buildSidebarItem(-1, Icons.logout_outlined, 'Sign Out', isDesktop),
@@ -642,6 +778,8 @@ class _RecruiterDashboardScreenState extends State<RecruiterDashboardScreen> {
               _fetchRecruiterJobs();
             } else if (index == 2) {
               _fetchApplications();
+            } else if (index == 3) {
+              _fetchAnnouncements();
             }
           }
         },
@@ -704,7 +842,9 @@ class _RecruiterDashboardScreenState extends State<RecruiterDashboardScreen> {
                 ? 'My Posted Opportunities'
                 : _activeTab == 1
                     ? 'Create New Opportunity'
-                    : 'Candidate Applications',
+                    : _activeTab == 2
+                        ? 'Candidate Applications'
+                        : 'Global Announcements',
             style: robotoStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
           ),
           Row(
