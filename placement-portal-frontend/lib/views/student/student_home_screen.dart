@@ -838,11 +838,15 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                 Container(
                   width: 32,
                   height: 32,
+                  padding: const EdgeInsets.all(4),
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(colors: [Color(0xFF14B8A6), Color(0xFF3B82F6)]),
+                    color: Colors.white,
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Icon(Icons.school_outlined, color: Colors.white, size: 18),
+                  child: Image.asset(
+                    'assets/images/bmu_logo.png',
+                    fit: BoxFit.contain,
+                  ),
                 ),
                 if (isDesktop) ...[
                   const SizedBox(width: 12),

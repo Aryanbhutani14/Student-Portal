@@ -197,6 +197,19 @@ class _SignupScreenState extends State<SignupScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Image.asset(
+              'assets/images/bmu_logo.png',
+              height: 48,
+              fit: BoxFit.contain,
+            ),
+          ),
+          const SizedBox(height: 20),
+          Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
               color: Colors.white.withOpacity(0.2),
@@ -245,6 +258,21 @@ class _SignupScreenState extends State<SignupScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
+            if (MediaQuery.of(context).size.width <= 800) ...[
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Image.asset(
+                  'assets/images/bmu_logo.png',
+                  height: 40,
+                  fit: BoxFit.contain,
+                ),
+              ),
+              const SizedBox(height: 20),
+            ],
             Text(
               'Sign Up',
               style: outfitTextStyle(
