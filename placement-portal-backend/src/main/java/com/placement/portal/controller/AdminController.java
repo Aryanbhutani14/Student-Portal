@@ -79,4 +79,17 @@ public class AdminController {
         List<StudentProfileDto> students = adminService.getAllStudents();
         return ResponseEntity.ok(students);
     }
+
+    @GetMapping("/profile")
+    public ResponseEntity<?> getProfile(Principal principal) {
+        if (principal == null || !isAdmin(principal)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Only admins can view admin profile.");
+        }
+        return ResponseEntity.ok(java.util.Map.of(
+            "email", principal.getName(),
+            "role", "ADMIN",
+            "isVerified", true
+        ));
+    }
 }
+

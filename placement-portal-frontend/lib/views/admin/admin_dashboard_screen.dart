@@ -29,7 +29,7 @@ class AdminDashboardScreen extends StatefulWidget {
 }
 
 class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
-  int _activeTab = 0; // 0 = Stats, 1 = Recruiters, 2 = Students, 3 = Announcements
+  int _activeTab = 0; // 0 = Stats, 1 = Recruiters, 2 = Students, 3 = Announcements, 4 = Profile
   String? _errorMessage;
 
   // Stats
@@ -59,6 +59,12 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   String _selectedAnnouncementType = 'Hackathon';
   final List<String> _announcementTypes = ['Hackathon', 'Seminar', 'Workshop', 'Notice'];
 
+  // Admin Profile fields
+  bool _isLoadingProfile = true;
+  String _adminEmail = '';
+  String _adminRole = '';
+  bool _adminVerified = false;
+
   @override
   void initState() {
     super.initState();
@@ -84,6 +90,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       _fetchStudents();
     } else if (_activeTab == 3) {
       _fetchAnnouncements();
+    } else if (_activeTab == 4) {
+      _fetchAdminProfile();
     }
   }
 
@@ -355,6 +363,155 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     }
   }
 
+  Future<void> _fetchAdminProfile() async {
+    setState(() {
+      _isLoadingProfile = true;
+      _errorMessage = null;
+    });
+    final url = Uri.parse('http://localhost:8080/admin/profile');
+    try {
+      final response = await http.get(
+        url,
+        headers: {
+          'Authorization': 'Bearer ${TokenManager.token}',
+          'Content-Type': 'application/json',
+        },
+      );
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        setState(() {
+          _adminEmail = data['email'] ?? 'admin@bmu.edu.in';
+          _adminRole = data['role'] ?? 'ADMIN';
+          _adminVerified = data['isVerified'] ?? true;
+        });
+      } else {
+        setState(() {
+          _errorMessage = 'Failed to load admin profile details.';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Error communicating with the server.';
+      });
+    } finally {
+      setState(() {
+        _isLoadingProfile = false;
+      });
+    }
+  }
+
+  Widget _buildProfileView(bool isDesktop) {
+    if (_isLoadingProfile) {
+      return const Center(child: CircularProgressIndicator(color: Color(0xFF14B8A6)));
+    }
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24),
+      child: Center(
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 600),
+          padding: const EdgeInsets.all(32),
+          decoration: BoxDecoration(
+            color: const Color(0xFF111827),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: Colors.white.withOpacity(0.04)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.2),
+                blurRadius: 20,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Admin Profile Details',
+                style: robotoStyle(color: const Color(0xFF14B8A6), fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 24),
+              // Email
+              Text(
+                'Admin Email Address',
+                style: robotoStyle(color: Colors.white38, fontSize: 12, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1F2937).withOpacity(0.5),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Colors.white.withOpacity(0.02)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.email_outlined, color: Colors.white38, size: 18),
+                    const SizedBox(width: 12),
+                    Text(
+                      _adminEmail,
+                      style: robotoStyle(color: Colors.white70, fontSize: 14),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+              // Role
+              Text(
+                'Assigned System Role',
+                style: robotoStyle(color: Colors.white38, fontSize: 12, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1F2937).withOpacity(0.5),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Colors.white.withOpacity(0.02)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.security_outlined, color: Color(0xFF3B82F6), size: 18),
+                    const SizedBox(width: 12),
+                    Text(
+                      _adminRole,
+                      style: robotoStyle(color: const Color(0xFF3B82F6), fontSize: 14, fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+              // Status
+              Text(
+                'Account Verification Status',
+                style: robotoStyle(color: Colors.white38, fontSize: 12, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1F2937).withOpacity(0.5),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Colors.white.withOpacity(0.02)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.verified_user_outlined, color: Color(0xFF14B8A6), size: 18),
+                    const SizedBox(width: 12),
+                    Text(
+                      _adminVerified ? 'System Verified' : 'Unverified',
+                      style: robotoStyle(color: const Color(0xFF14B8A6), fontSize: 14, fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
@@ -439,6 +596,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           _buildSidebarItem(2, Icons.people_outline, 'Student Database', isDesktop),
           const SizedBox(height: 12),
           _buildSidebarItem(3, Icons.campaign_outlined, 'Announcements', isDesktop),
+          const SizedBox(height: 12),
+          _buildSidebarItem(4, Icons.person_outline, 'My Profile', isDesktop),
           const Spacer(),
           _buildSidebarItem(-1, Icons.logout_outlined, 'Sign Out', isDesktop),
           const SizedBox(height: 32),
@@ -516,6 +675,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     if (_activeTab == 1) titleText = 'Verify Recruiters';
     if (_activeTab == 2) titleText = 'Student Database';
     if (_activeTab == 3) titleText = 'Announcement Panel';
+    if (_activeTab == 4) titleText = 'My Admin Profile';
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
@@ -558,8 +718,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       return _buildRecruitersView(isDesktop);
     } else if (_activeTab == 2) {
       return _buildStudentsView(isDesktop);
-    } else {
+    } else if (_activeTab == 3) {
       return _buildAnnouncementsView(isDesktop);
+    } else {
+      return _buildProfileView(isDesktop);
     }
   }
 

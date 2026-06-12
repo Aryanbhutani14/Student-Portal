@@ -28,7 +28,7 @@ class RecruiterDashboardScreen extends StatefulWidget {
 }
 
 class _RecruiterDashboardScreenState extends State<RecruiterDashboardScreen> {
-  int _activeTab = 0; // 0 = My Postings, 1 = Post Job, 2 = Applications, 3 = Announcements
+  int _activeTab = 0; // 0 = My Postings, 1 = Post Job, 2 = Applications, 3 = Announcements, 4 = Profile
   bool _isLoading = true;
   bool _isSubmitting = false;
   String? _errorMessage;
@@ -53,6 +53,16 @@ class _RecruiterDashboardScreenState extends State<RecruiterDashboardScreen> {
 
   final List<String> _jobTypes = ['Internship', 'Full-Time', 'Hackathon', 'Training'];
 
+  // Recruiter Profile fields
+  bool _isLoadingProfile = true;
+  bool _isSavingProfile = false;
+  bool _isEditProfileMode = false;
+  final _companyNameController = TextEditingController();
+  final _websiteController = TextEditingController();
+  String _recruiterEmail = '';
+  bool _recruiterVerified = false;
+  final _profileFormKey = GlobalKey<FormState>();
+
   @override
   void initState() {
     super.initState();
@@ -66,6 +76,8 @@ class _RecruiterDashboardScreenState extends State<RecruiterDashboardScreen> {
     _locationController.dispose();
     _salaryController.dispose();
     _skillsController.dispose();
+    _companyNameController.dispose();
+    _websiteController.dispose();
     super.dispose();
   }
 
@@ -659,6 +671,287 @@ class _RecruiterDashboardScreenState extends State<RecruiterDashboardScreen> {
     }
   }
 
+  Future<void> _fetchRecruiterProfile() async {
+    setState(() {
+      _isLoadingProfile = true;
+      _errorMessage = null;
+    });
+    final url = Uri.parse('http://localhost:8080/recruiter/profile');
+    try {
+      final response = await http.get(
+        url,
+        headers: {
+          'Authorization': 'Bearer ${TokenManager.token}',
+          'Content-Type': 'application/json',
+        },
+      );
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        setState(() {
+          _recruiterEmail = data['email'] ?? '';
+          _companyNameController.text = data['companyName'] ?? '';
+          _websiteController.text = data['website'] ?? '';
+          _recruiterVerified = data['verified'] ?? false;
+        });
+      } else {
+        setState(() {
+          _errorMessage = 'Failed to load profile details.';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Error communicating with the server.';
+      });
+    } finally {
+      setState(() {
+        _isLoadingProfile = false;
+      });
+    }
+  }
+
+  Future<void> _saveRecruiterProfile() async {
+    if (!_profileFormKey.currentState!.validate()) return;
+
+    setState(() {
+      _isSavingProfile = true;
+    });
+    final url = Uri.parse('http://localhost:8080/recruiter/profile');
+    try {
+      final response = await http.put(
+        url,
+        headers: {
+          'Authorization': 'Bearer ${TokenManager.token}',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'companyName': _companyNameController.text.trim(),
+          'website': _websiteController.text.trim(),
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        setState(() {
+          _companyNameController.text = data['companyName'] ?? '';
+          _websiteController.text = data['website'] ?? '';
+          _isEditProfileMode = false;
+        });
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Profile updated successfully!', style: robotoStyle()),
+              backgroundColor: Colors.greenAccent[700],
+            ),
+          );
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to update profile.', style: robotoStyle()),
+              backgroundColor: Colors.redAccent,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error communicating with the server.', style: robotoStyle()),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    } finally {
+      setState(() {
+        _isSavingProfile = false;
+      });
+    }
+  }
+
+  Widget _buildProfileView(bool isDesktop) {
+    if (_isLoadingProfile) {
+      return const Center(child: CircularProgressIndicator(color: Color(0xFF14B8A6)));
+    }
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24),
+      child: Center(
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 600),
+          padding: const EdgeInsets.all(32),
+          decoration: BoxDecoration(
+            color: const Color(0xFF111827),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: Colors.white.withOpacity(0.04)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.2),
+                blurRadius: 20,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: Form(
+            key: _profileFormKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Profile Information',
+                      style: robotoStyle(color: const Color(0xFF14B8A6), fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    IconButton(
+                      icon: Icon(
+                        _isEditProfileMode ? Icons.close : Icons.edit,
+                        color: const Color(0xFF14B8A6),
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _isEditProfileMode = !_isEditProfileMode;
+                          if (!_isEditProfileMode) {
+                            _fetchRecruiterProfile(); // reset fields
+                          }
+                        });
+                      },
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                // Email
+                Text(
+                  'Email Address',
+                  style: robotoStyle(color: Colors.white38, fontSize: 12, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1F2937).withOpacity(0.5),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.white.withOpacity(0.02)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.email_outlined, color: Colors.white38, size: 18),
+                      const SizedBox(width: 12),
+                      Text(
+                        _recruiterEmail,
+                        style: robotoStyle(color: Colors.white70, fontSize: 14),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+                // Verification Status
+                Text(
+                  'Verification Status',
+                  style: robotoStyle(color: Colors.white38, fontSize: 12, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1F2937).withOpacity(0.5),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.white.withOpacity(0.02)),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        _recruiterVerified ? Icons.verified : Icons.hourglass_empty,
+                        color: _recruiterVerified ? const Color(0xFF14B8A6) : Colors.orangeAccent,
+                        size: 18,
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        _recruiterVerified ? 'Verified Recruiter' : 'Verification Pending',
+                        style: robotoStyle(
+                          color: _recruiterVerified ? const Color(0xFF14B8A6) : Colors.orangeAccent,
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+                // Company Name
+                Text(
+                  'Company Name',
+                  style: robotoStyle(color: Colors.white38, fontSize: 12, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: _companyNameController,
+                  enabled: _isEditProfileMode,
+                  style: robotoStyle(color: Colors.white, fontSize: 14),
+                  decoration: InputDecoration(
+                    prefixIcon: const Icon(Icons.business_outlined, color: Color(0xFF14B8A6), size: 18),
+                    filled: true,
+                    fillColor: _isEditProfileMode ? const Color(0xFF1F2937) : const Color(0xFF1F2937).withOpacity(0.5),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(color: Color(0xFF14B8A6), width: 1.5),
+                    ),
+                  ),
+                  validator: (v) {
+                    if (v == null || v.trim().isEmpty) return 'Company name is required';
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 20),
+                // Website
+                Text(
+                  'Company Website',
+                  style: robotoStyle(color: Colors.white38, fontSize: 12, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: _websiteController,
+                  enabled: _isEditProfileMode,
+                  style: robotoStyle(color: Colors.white, fontSize: 14),
+                  decoration: InputDecoration(
+                    prefixIcon: const Icon(Icons.language_outlined, color: Color(0xFF14B8A6), size: 18),
+                    filled: true,
+                    fillColor: _isEditProfileMode ? const Color(0xFF1F2937) : const Color(0xFF1F2937).withOpacity(0.5),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(color: Color(0xFF14B8A6), width: 1.5),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 32),
+                if (_isEditProfileMode)
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: ElevatedButton(
+                      onPressed: _isSavingProfile ? null : _saveRecruiterProfile,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF14B8A6),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      child: _isSavingProfile
+                          ? const CircularProgressIndicator(color: Colors.white)
+                          : Text('Save Profile Details', style: robotoStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
@@ -694,7 +987,9 @@ class _RecruiterDashboardScreenState extends State<RecruiterDashboardScreen> {
                             ? _buildPostJobForm()
                             : _activeTab == 2
                                 ? _buildApplicationsView(isDesktop)
-                                : _buildAnnouncementsView(isDesktop),
+                                : _activeTab == 3
+                                    ? _buildAnnouncementsView(isDesktop)
+                                    : _buildProfileView(isDesktop),
                   ),
                 ],
               ),
@@ -752,6 +1047,8 @@ class _RecruiterDashboardScreenState extends State<RecruiterDashboardScreen> {
           _buildSidebarItem(2, Icons.people_outline, 'Applications', isDesktop),
           const SizedBox(height: 12),
           _buildSidebarItem(3, Icons.campaign_outlined, 'Announcements', isDesktop),
+          const SizedBox(height: 12),
+          _buildSidebarItem(4, Icons.person_outline, 'My Profile', isDesktop),
           const Spacer(),
           // Logout button
           _buildSidebarItem(-1, Icons.logout_outlined, 'Sign Out', isDesktop),
@@ -784,6 +1081,8 @@ class _RecruiterDashboardScreenState extends State<RecruiterDashboardScreen> {
               _fetchApplications();
             } else if (index == 3) {
               _fetchAnnouncements();
+            } else if (index == 4) {
+              _fetchRecruiterProfile();
             }
           }
         },
@@ -848,7 +1147,9 @@ class _RecruiterDashboardScreenState extends State<RecruiterDashboardScreen> {
                     ? 'Create New Opportunity'
                     : _activeTab == 2
                         ? 'Candidate Applications'
-                        : 'Global Announcements',
+                        : _activeTab == 3
+                            ? 'Global Announcements'
+                            : 'My Recruiter Profile',
             style: robotoStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
           ),
           Row(

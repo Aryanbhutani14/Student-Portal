@@ -471,7 +471,23 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
               ),
             ),
-            const SizedBox(height: 28),
+            const Divider(color: Colors.white10, height: 32),
+            Center(
+              child: Text(
+                'Quick Demo Access',
+                style: interTextStyle(color: Colors.white38, fontSize: 12, fontWeight: FontWeight.bold),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildDemoButton('Student', 'student.test@bmu.edu.in'),
+                _buildDemoButton('Recruiter', 'recruiter.google@bmu.edu.in'),
+                _buildDemoButton('Admin', 'admin@bmu.edu.in'),
+              ],
+            ),
+            const SizedBox(height: 16),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -498,6 +514,30 @@ class _LoginScreenState extends State<LoginScreen> {
               ],
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDemoButton(String label, String email) {
+    return InkWell(
+      onTap: () {
+        setState(() {
+          _emailController.text = email;
+          _passwordController.text = 'password';
+        });
+      },
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1F2937),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.white.withOpacity(0.05)),
+        ),
+        child: Text(
+          label,
+          style: interTextStyle(color: const Color(0xFF14B8A6), fontSize: 11, fontWeight: FontWeight.bold),
         ),
       ),
     );
