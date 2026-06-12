@@ -367,9 +367,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   return 'Please enter your email';
                 }
                 final emailTrimmed = value.trim();
-                if (!emailTrimmed.endsWith('@bmu.edu.in')) {
-                  return 'Email must belong to the @bmu.edu.in domain';
-                }
                 if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(emailTrimmed)) {
                   return 'Please enter a valid email address';
                 }
@@ -483,7 +480,7 @@ class _LoginScreenState extends State<LoginScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 _buildDemoButton('Student', 'student.test@bmu.edu.in'),
-                _buildDemoButton('Recruiter', 'recruiter.google@bmu.edu.in'),
+                _buildDemoButton('Recruiter', 'recruiter.google@google.com'),
                 _buildDemoButton('Admin', 'admin@bmu.edu.in'),
               ],
             ),

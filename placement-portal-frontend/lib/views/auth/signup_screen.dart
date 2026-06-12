@@ -404,8 +404,10 @@ class _SignupScreenState extends State<SignupScreen> {
                   return 'Please enter your email';
                 }
                 final emailTrimmed = value.trim();
-                if (!emailTrimmed.endsWith('@bmu.edu.in')) {
-                  return 'Email must belong to the @bmu.edu.in domain';
+                if (_selectedRole == 'STUDENT') {
+                  if (!emailTrimmed.endsWith('@bmu.edu.in')) {
+                    return 'Student email must belong to the @bmu.edu.in domain';
+                  }
                 }
                 if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(emailTrimmed)) {
                   return 'Please enter a valid email address';

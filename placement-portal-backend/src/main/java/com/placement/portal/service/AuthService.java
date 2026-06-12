@@ -39,7 +39,8 @@ public class AuthService {
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
-        if (!request.getEmail().endsWith("@bmu.edu.in")) {
+        if ((request.getRole() == Role.STUDENT || request.getRole() == Role.ADMIN) &&
+                !request.getEmail().endsWith("@bmu.edu.in")) {
             throw new IllegalArgumentException("Email must belong to the @bmu.edu.in domain");
         }
 
@@ -88,7 +89,11 @@ public class AuthService {
     }
 
     public AuthResponse login(LoginRequest request) {
-        if (!request.getEmail().endsWith("@bmu.edu.in")) {
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        if ((user.getRole() == Role.STUDENT || user.getRole() == Role.ADMIN) &&
+                !user.getEmail().endsWith("@bmu.edu.in")) {
             throw new IllegalArgumentException("Email must belong to the @bmu.edu.in domain");
         }
 
@@ -98,9 +103,6 @@ public class AuthService {
                         request.getPassword()
                 )
         );
-
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         UserDetails userDetails = new org.springframework.security.core.userdetails.User(
                 user.getEmail(),
@@ -120,11 +122,12 @@ public class AuthService {
 
     @Transactional
     public void sendOtp(String email) {
-        if (!email.endsWith("@bmu.edu.in")) {
-            throw new IllegalArgumentException("Email must belong to the @bmu.edu.in domain");
-        }
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("User not found with email: " + email));
+        if ((user.getRole() == Role.STUDENT || user.getRole() == Role.ADMIN) &&
+                !email.endsWith("@bmu.edu.in")) {
+            throw new IllegalArgumentException("Email must belong to the @bmu.edu.in domain");
+        }
 
         String otp = String.format("%06d", (int)(Math.random() * 900000 + 100000));
         user.setOtp(otp);

@@ -42,7 +42,7 @@ public class DataInitializer implements CommandLineRunner {
 
         // 1. Create Recruiter: Apple
         User userApple = User.builder()
-                .email("recruiter.apple@bmu.edu.in")
+                .email("recruiter.apple@apple.com")
                 .password(passwordEncoder.encode("password"))
                 .role(Role.RECRUITER)
                 .isVerified(true)
@@ -58,7 +58,7 @@ public class DataInitializer implements CommandLineRunner {
 
         // 2. Create Recruiter: Google
         User userGoogle = User.builder()
-                .email("recruiter.google@bmu.edu.in")
+                .email("recruiter.google@google.com")
                 .password(passwordEncoder.encode("password"))
                 .role(Role.RECRUITER)
                 .isVerified(true)
