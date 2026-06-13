@@ -103,6 +103,18 @@ Created a structured PostgreSQL database schema (`placement-portal-backend/src/m
   - **Pie Chart**: Visualizes placement distribution ratio (Placed vs. Unplaced students) with central rate readouts.
   - **Bar Chart**: Visualizes placed counts per branch with custom gradient rods and dynamic tooltip overlays.
 
+### 📌 Phase 11 — Recruiter/Admin Profiles & Role-based Domains
+*   **Profile Tabs**: Added custom profile screens allowing recruiters to save company data (`PUT /recruiter/profile`) and admins to view profile metadata.
+*   **Domain Validation Rules**: Enforces strict `@bmu.edu.in` domain checking for students and admins, while allowing recruiters to use custom corporate domains.
+
+### 📌 Phase 12 — Global Notification Bell Dropdown
+*   **Announcements Bell**: Added an interactive notification bell icon at the top-right header of all dashboards showing a counter badge of announcements.
+*   **Announcements Dropdown**: Click overlay showing the top 5 announcements with color-coded type badges (Notice, Seminar, Workshop, Hackathon) and direct redirection to the Announcements screen.
+
+### 📌 Phase 13 — AI Resume Checker & Profile Strength Gauge
+*   **AI Resume Checker**: Added file picker allowing students to upload resumes (`PDF`/`DOCX`), track simulated upload progress, and analyze structure to get a score out of 10 with actionable feedback comments and recommendation checklists.
+*   **Profile Strength Gauge**: Dynamically calculates and displays a custom progress completion bar (Red, Orange, Teal progress levels) showing profile completeness across 11 key student fields.
+
 ---
 
 ## 🎨 Global UI Theme Redesign

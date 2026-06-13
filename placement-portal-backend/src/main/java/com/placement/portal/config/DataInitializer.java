@@ -28,6 +28,7 @@ public class DataInitializer implements CommandLineRunner {
     public void run(String... args) throws Exception {
         log.info("Cleaning database to perform clean seed of demo data...");
         try {
+            studentRepository.deleteSavedJobsRelation();
             applicationRepository.deleteAll();
             announcementRepository.deleteAll();
             jobRepository.deleteAll();

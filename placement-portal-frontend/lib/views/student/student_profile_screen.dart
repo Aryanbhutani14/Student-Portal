@@ -261,6 +261,8 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 _buildHeader(),
+                                const SizedBox(height: 20),
+                                _buildProfileCompletionBar(),
                                 const Divider(color: Colors.white10, height: 40),
                                 if (_errorMessage != null) ...[
                                   _buildBanner(_errorMessage!, Colors.redAccent, Icons.error_outline),
@@ -287,6 +289,116 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                   ),
                 ),
               ),
+      ),
+    );
+  }
+
+  double _calculateCompletionPercentage() {
+    int totalFields = 11;
+    int filledFields = 0;
+    if (_nameController.text.trim().isNotEmpty) filledFields++;
+    if (_branchController.text.trim().isNotEmpty) filledFields++;
+    if (_semesterController.text.trim().isNotEmpty) filledFields++;
+    if (_cgpaController.text.trim().isNotEmpty) filledFields++;
+    if (_skillsController.text.trim().isNotEmpty) filledFields++;
+    if (_certificationsController.text.trim().isNotEmpty) filledFields++;
+    if (_projectsController.text.trim().isNotEmpty) filledFields++;
+    if (_experienceController.text.trim().isNotEmpty) filledFields++;
+    if (_githubController.text.trim().isNotEmpty) filledFields++;
+    if (_linkedinController.text.trim().isNotEmpty) filledFields++;
+    if (_resumeController.text.trim().isNotEmpty) filledFields++;
+    
+    return filledFields / totalFields;
+  }
+
+  Widget _buildProfileCompletionBar() {
+    final completion = _calculateCompletionPercentage();
+    final percentage = (completion * 100).round();
+    
+    Color progressColor;
+    String statusText;
+    if (completion < 0.4) {
+      progressColor = Colors.redAccent;
+      statusText = 'Needs Improvement';
+    } else if (completion < 0.8) {
+      progressColor = Colors.orangeAccent;
+      statusText = 'Good Progress';
+    } else {
+      progressColor = const Color(0xFF14B8A6);
+      statusText = completion == 1.0 ? 'Profile Complete!' : 'Excellent Strength';
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1F2937),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withAlpha(15)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.bolt, color: Color(0xFF14B8A6), size: 20),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Profile Completion Strength',
+                    style: robotoStyle(
+                      color: Colors.white,
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              Text(
+                '$percentage%',
+                style: robotoStyle(
+                  color: progressColor,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: LinearProgressIndicator(
+              value: completion,
+              backgroundColor: Colors.white12,
+              valueColor: AlwaysStoppedAnimation<Color>(progressColor),
+              minHeight: 8,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                statusText,
+                style: robotoStyle(
+                  color: progressColor.withOpacity(0.8),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              Text(
+                completion == 1.0 
+                    ? '100% complete'
+                    : 'Fill more fields to reach 100% strength',
+                style: robotoStyle(
+                  color: Colors.white38,
+                  fontSize: 11,
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

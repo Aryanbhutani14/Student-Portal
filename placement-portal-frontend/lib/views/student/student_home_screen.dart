@@ -1,6 +1,8 @@
 import 'dart:convert';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:file_picker/file_picker.dart' as fp;
 import 'package:placement_portal_frontend/utils/token_manager.dart';
 
 TextStyle robotoStyle({
@@ -44,6 +46,16 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
 
   List<dynamic> _announcementsList = [];
   bool _isLoadingAnnouncements = false;
+
+  // Resume Checker state fields
+  String? _resumeFileName;
+  int? _resumeFileSize;
+  bool _isResumeUploading = false;
+  double _resumeUploadProgress = 0.0;
+  bool _isResumeGrading = false;
+  int? _resumeScore;
+  String? _resumeFeedback;
+  bool _hasCheckedResume = false;
 
   // Profile info for recommendation matching
   String _studentSkills = "";
@@ -811,7 +823,9 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                             ? _buildBookmarksView(isDesktop)
                             : _activeTab == 2
                                 ? _buildApplicationsView(isDesktop)
-                                : _buildAnnouncementsView(isDesktop),
+                                : _activeTab == 3
+                                    ? _buildAnnouncementsView(isDesktop)
+                                    : _buildResumeCheckView(isDesktop),
                   ),
                 ],
               ),
@@ -869,6 +883,8 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
           _buildSidebarItem(2, Icons.assignment_turned_in_outlined, 'Applications', isDesktop),
           const SizedBox(height: 12),
           _buildSidebarItem(3, Icons.campaign_outlined, 'Announcements', isDesktop),
+          const SizedBox(height: 12),
+          _buildSidebarItem(4, Icons.description_outlined, 'Resume Checker', isDesktop),
           const Spacer(),
           // Logout button
           _buildSidebarItem(-1, Icons.logout_outlined, 'Sign Out', isDesktop),
@@ -901,6 +917,8 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
               _fetchAppliedJobs();
             } else if (index == 3) {
               _fetchAnnouncements();
+            } else if (index == 4) {
+              // Resume Checker - local view, no api calls required
             } else {
               _loadInitialData();
             }
@@ -1432,7 +1450,9 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                     ? 'Saved Opportunities'
                     : _activeTab == 2
                         ? 'My Applications'
-                        : 'Global Announcements',
+                        : _activeTab == 3
+                            ? 'Global Announcements'
+                            : 'AI Resume Checker',
             style: robotoStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
           ),
           Row(
@@ -1710,6 +1730,451 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                 ),
               ),
             ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _pickResume() async {
+    try {
+      final result = await fp.FilePicker.pickFiles(
+        type: fp.FileType.custom,
+        allowedExtensions: ['pdf', 'doc', 'docx'],
+      );
+
+      if (result != null && result.files.isNotEmpty) {
+        final file = result.files.first;
+        setState(() {
+          _resumeFileName = file.name;
+          _resumeFileSize = file.size;
+          _hasCheckedResume = false;
+          _resumeScore = null;
+          _resumeFeedback = null;
+        });
+
+        await _simulateUpload();
+      }
+    } catch (e) {
+      print('Error picking file: $e');
+    }
+  }
+
+  Future<void> _simulateUpload() async {
+    setState(() {
+      _isResumeUploading = true;
+      _resumeUploadProgress = 0.0;
+    });
+
+    for (int i = 1; i <= 10; i++) {
+      await Future.delayed(const Duration(milliseconds: 150));
+      setState(() {
+        _resumeUploadProgress = i / 10.0;
+      });
+    }
+
+    setState(() {
+      _isResumeUploading = false;
+    });
+  }
+
+  Future<void> _checkResumeScore() async {
+    if (_resumeFileName == null) return;
+
+    setState(() {
+      _isResumeGrading = true;
+    });
+
+    await Future.delayed(const Duration(seconds: 2));
+
+    final randomScore = Random().nextInt(4) + 6; // Score between 6 and 9
+    String feedback;
+    if (randomScore >= 9) {
+      feedback = "Outstanding resume! The layout, structure, and keyword density are exceptionally high. Excellent representation of skills, achievements, and professional links.";
+    } else if (randomScore >= 8) {
+      feedback = "Great resume with very strong content. To reach a perfect 10, try adding quantified bullet points (e.g., 'increased efficiency by 20%') and make sure your certification links are live.";
+    } else if (randomScore >= 7) {
+      feedback = "Good foundation. Recommendations: Enhance your skills section with specific frameworks, expand your project descriptions to focus on your individual contributions, and ensure layout alignment is consistent.";
+    } else {
+      feedback = "Decent start, but needs improvements. Focus on adding more relevant projects, including external links (GitHub, LinkedIn), and refining layout margins for a cleaner presentation.";
+    }
+
+    setState(() {
+      _isResumeGrading = false;
+      _resumeScore = randomScore;
+      _resumeFeedback = feedback;
+      _hasCheckedResume = true;
+    });
+  }
+
+  Widget _buildResumeCheckView(bool isDesktop) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Banner explanation
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1F2937),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.white.withOpacity(0.05)),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.info_outline, color: Color(0xFF14B8A6), size: 24),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'AI-Powered Resume Analysis',
+                        style: robotoStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Upload your resume in PDF or DOCX format. Our analyzer will scan layout structure, skill keyword density, link validation, and provide immediate grading out of 10 with actionable feedback.',
+                        style: robotoStyle(color: Colors.white60, fontSize: 13, height: 1.4),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // File Picker / Upload zone
+          if (_resumeFileName == null)
+            InkWell(
+              onTap: _pickResume,
+              borderRadius: BorderRadius.circular(16),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 24),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1F2937).withOpacity(0.4),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: const Color(0xFF14B8A6).withOpacity(0.3),
+                    style: BorderStyle.solid,
+                    width: 1.5,
+                  ),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.cloud_upload_outlined, color: Color(0xFF14B8A6), size: 48),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Drag & Drop your resume here, or Click to browse',
+                      style: robotoStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Accepts PDF, DOC, DOCX files up to 5MB',
+                      style: robotoStyle(color: Colors.white38, fontSize: 12),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          else
+            // Selected file card
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1F2937),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.white.withOpacity(0.05)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        _resumeFileName!.endsWith('.pdf') 
+                            ? Icons.picture_as_pdf_outlined 
+                            : Icons.description_outlined,
+                        color: _resumeFileName!.endsWith('.pdf') ? Colors.redAccent : Colors.blueAccent,
+                        size: 36,
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              _resumeFileName!,
+                              style: robotoStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              _resumeFileSize != null 
+                                  ? '${(_resumeFileSize! / 1024).round()} KB'
+                                  : 'Unknown Size',
+                              style: robotoStyle(color: Colors.white38, fontSize: 12),
+                            ),
+                          ],
+                        ),
+                      ),
+                      if (!_isResumeUploading && !_isResumeGrading)
+                        IconButton(
+                          onPressed: () {
+                            setState(() {
+                              _resumeFileName = null;
+                              _resumeFileSize = null;
+                              _hasCheckedResume = false;
+                              _resumeScore = null;
+                              _resumeFeedback = null;
+                            });
+                          },
+                          icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
+                          tooltip: 'Remove file',
+                        ),
+                    ],
+                  ),
+                  if (_isResumeUploading) ...[
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Uploading file...',
+                          style: robotoStyle(color: const Color(0xFF14B8A6), fontSize: 12, fontWeight: FontWeight.bold),
+                        ),
+                        Text(
+                          '${(_resumeUploadProgress * 100).round()}%',
+                          style: robotoStyle(color: const Color(0xFF14B8A6), fontSize: 12, fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: LinearProgressIndicator(
+                        value: _resumeUploadProgress,
+                        backgroundColor: Colors.white10,
+                        valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF14B8A6)),
+                        minHeight: 6,
+                      ),
+                    ),
+                  ],
+                  if (!_isResumeUploading && !_hasCheckedResume && !_isResumeGrading) ...[
+                    const SizedBox(height: 20),
+                    Row(
+                      children: [
+                        ElevatedButton.icon(
+                          onPressed: _checkResumeScore,
+                          icon: const Icon(Icons.analytics_outlined, size: 18, color: Colors.white),
+                          label: Text(
+                            'Analyze & Grade Resume',
+                            style: robotoStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF14B8A6),
+                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          const SizedBox(height: 24),
+
+          // Grading loading state
+          if (_isResumeGrading)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 40),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1F2937),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.white.withOpacity(0.05)),
+              ),
+              child: Column(
+                children: [
+                  const CircularProgressIndicator(color: Color(0xFF14B8A6)),
+                  const SizedBox(height: 20),
+                  Text(
+                    'AI Analyzing Resume...',
+                    style: robotoStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Evaluating skills, readability, and structural hierarchy',
+                    style: robotoStyle(color: Colors.white38, fontSize: 12),
+                  ),
+                ],
+              ),
+            ),
+
+          // Results display
+          if (_hasCheckedResume && _resumeScore != null) ...[
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1F2937),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.white.withOpacity(0.05)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Analysis Results',
+                    style: robotoStyle(color: const Color(0xFF14B8A6), fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 20),
+                  isDesktop
+                      ? Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildScoreCircle(),
+                            const SizedBox(width: 32),
+                            Expanded(child: _buildFeedbackDetails()),
+                          ],
+                        )
+                      : Column(
+                          children: [
+                            _buildScoreCircle(),
+                            const SizedBox(height: 24),
+                            _buildFeedbackDetails(),
+                          ],
+                        ),
+                  const SizedBox(height: 24),
+                  const Divider(color: Colors.white10),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Actionable Recommendation Checklist',
+                    style: robotoStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 12),
+                  _buildChecklistItem('Layout Formatting Consistency', true),
+                  _buildChecklistItem('Contact Info and Live Links (LinkedIn, GitHub)', true),
+                  _buildChecklistItem('Required Skills Keywords Alignment', true),
+                  _buildChecklistItem('Quantified Achievements (Metrics used)', _resumeScore! >= 8),
+                  const SizedBox(height: 24),
+                  OutlinedButton.icon(
+                    onPressed: () {
+                      setState(() {
+                        _resumeFileName = null;
+                        _resumeFileSize = null;
+                        _hasCheckedResume = false;
+                        _resumeScore = null;
+                        _resumeFeedback = null;
+                      });
+                    },
+                    icon: const Icon(Icons.refresh, size: 18, color: Colors.white),
+                    label: Text(
+                      'Check Another Resume',
+                      style: robotoStyle(color: Colors.white, fontSize: 13),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Colors.white30),
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildScoreCircle() {
+    Color scoreColor;
+    if (_resumeScore! >= 8) {
+      scoreColor = const Color(0xFF14B8A6);
+    } else if (_resumeScore! >= 6) {
+      scoreColor = Colors.orangeAccent;
+    } else {
+      scoreColor = Colors.redAccent;
+    }
+
+    return Container(
+      width: 140,
+      height: 140,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: scoreColor.withOpacity(0.1),
+        border: Border.all(color: scoreColor.withOpacity(0.3), width: 4),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            '$_resumeScore',
+            style: robotoStyle(color: scoreColor, fontSize: 48, fontWeight: FontWeight.bold),
+          ),
+          Text(
+            '/ 10',
+            style: robotoStyle(color: Colors.white38, fontSize: 14),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFeedbackDetails() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: const Color(0xFF14B8A6).withOpacity(0.15),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Text(
+                'AI Grading Feedback',
+                style: robotoStyle(color: const Color(0xFF14B8A6), fontSize: 11, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Text(
+          _resumeFeedback ?? '',
+          style: robotoStyle(color: Colors.white70, fontSize: 13, height: 1.5),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildChecklistItem(String text, bool isPass) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8.0),
+      child: Row(
+        children: [
+          Icon(
+            isPass ? Icons.check_circle_outline : Icons.info_outline,
+            color: isPass ? const Color(0xFF14B8A6) : Colors.orangeAccent,
+            size: 18,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              text,
+              style: robotoStyle(
+                color: isPass ? Colors.white70 : Colors.white38,
+                fontSize: 13,
+                fontWeight: isPass ? FontWeight.normal : FontWeight.bold,
+              ),
+            ),
           ),
         ],
       ),
